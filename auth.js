@@ -83,9 +83,24 @@ async function syncSignOut(){ if(SYNC.client) await SYNC.client.auth.signOut(); 
 function syncBadge(txt){
   const el=document.getElementById('acct'); if(!el) return;
   const signedIn = SYNC.on && SYNC.user;
-  el.innerHTML = signedIn
-    ? `<span class="acctdot on"></span><span class="accttxt">${txt}</span><button id="acctout" class="acctbtn">Sign out</button>`
-    : `<span class="acctdot"></span><span class="accttxt">${txt}</span><button id="acctin" class="acctbtn">Sign in</button>`;
-  const i=document.getElementById('acctin'); if(i) i.onclick=()=>document.getElementById('loginwrap').classList.add('open');
-  const o=document.getElementById('acctout'); if(o) o.onclick=async()=>{ await syncSignOut(); location.reload(); };
+  if(signedIn){
+    // put the signed-in person's name on the board itself, not just in the strip
+    const nm = (localStorage.getItem('fl_owner')||'').trim()
+            || (SYNC.user.email||'').split('@')[0];
+    const w=document.getElementById('whose');
+    if(w) w.textContent = nm ? nm.charAt(0).toUpperCase()+nm.slice(1)+"'s Board" : 'Draft Board';
+    el.innerHTML = `<span class="acctdot on"></span>
+      <span class="accttxt" title="${txt}">${txt}</span>
+      <button id="acctout" class="acctbtn">Sign out</button>`;
+  } else {
+    el.innerHTML = `<span class="acctdot"></span>
+      <span class="accttxt">${txt}</span>
+      <button id="acctin" class="acctbtn">Sign in</button>`;
+  }
+  const i=document.getElementById('acctin');
+  if(i) i.onclick=()=>document.getElementById('loginwrap').classList.add('open');
+  const o=document.getElementById('acctout');
+  if(o) o.onclick=async()=>{
+    if(!confirm('Sign out? Your board stays saved on this device.')) return;
+    await syncSignOut(); location.reload(); };
 }
