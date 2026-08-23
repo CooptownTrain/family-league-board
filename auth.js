@@ -104,3 +104,13 @@ function syncBadge(txt){
     if(!confirm('Sign out? Your board stays saved on this device.')) return;
     await syncSignOut(); location.reload(); };
 }
+
+/* A module's top-level names are NOT globals. The board is plain inline script, so it
+   could never see any of these — every sign-in attempt fell through to "accounts are
+   not set up". Publish them explicitly. */
+Object.assign(window, {
+  syncInit, syncSignIn, syncSignOut, syncPush, syncBadge,
+  FL_SYNC: SYNC,
+});
+syncBadge(SUPA_URL && SUPA_KEY ? 'not signed in' : 'local only');
+syncInit();
