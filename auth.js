@@ -79,7 +79,12 @@ async function syncSignIn(email){
     email, options:{ emailRedirectTo: location.href.split('#')[0] } });
   return error? error.message : null;
 }
-async function syncSignOut(){ if(SYNC.client) await SYNC.client.auth.signOut(); }
+async function syncSignOut(){
+  if(SYNC.client) await SYNC.client.auth.signOut();
+  // The name on the board came from the account, so signing out has to clear it too.
+  // Leaving it made the title still read "Steve's Board" after logging out.
+  localStorage.removeItem('fl_owner');
+}
 function syncBadge(txt){
   const el=document.getElementById('acct'); if(!el) return;
   const signedIn = SYNC.on && SYNC.user;
