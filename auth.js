@@ -22,15 +22,27 @@ function applySnapshot(o){
   return changed;
 }
 
+function setSessionToken(session){
+  window.FL_SESSION_TOKEN = (session && session.access_token) || null;
+  // The panel shows a different badge once the assistant can actually answer, so it has
+  // to be told the moment sign-in completes rather than only on page load.
+  if(typeof window.aiMode === 'function'){ try{ window.aiMode(); }catch(e){} }
+}
 async function syncInit(){
   if(!SUPA_URL || !SUPA_KEY){ syncBadge('local only — no account set up'); return; }
   try{
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
     SYNC.client = createClient(SUPA_URL, SUPA_KEY);
     const { data:{ session } } = await SYNC.client.auth.getSession();
+    // The assistant used to need a key pasted into every browser once (#t=...), and the
+    // panel nagged about it on any machine where that had not been done. Being signed in
+    // already says who you are, so the session token is handed to the assistant instead
+    // and the server checks it against its allowlist. Added 2026-08-26.
+    setSessionToken(session);
     if(session){ await syncSignedIn(session.user); }
     else syncBadge('not signed in');
     SYNC.client.auth.onAuthStateChange((_e, s)=>{
+      setSessionToken(s);
       if(s?.user) syncSignedIn(s.user); else syncSignedOut();
     });
   }catch(e){
@@ -56,7 +68,7 @@ async function syncSignedIn(user){
     } else syncPush();
   }catch(e){ SYNC.err=e.message; syncBadge(user.email+' · sync paused'); }
 }
-function syncSignedOut(){ SYNC.on=false; SYNC.user=null; syncBadge('not signed in'); }
+function syncSignedOut(){ SYNC.on=false; SYNC.user=null; setSessionToken(null); syncBadge('not signed in'); }
 
 let pushTimer=null;
 function syncPush(){
