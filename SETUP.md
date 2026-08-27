@@ -61,6 +61,32 @@ If `ASK_TOKEN` is not set on the server the gate stays open, so a missing secret
 take the assistant down mid-draft — but it also means nothing is protected. Check it before
 a draft.
 
+## 6. Who the assistant answers (added 2026-08-27)
+
+Pasting the key into every browser (`#t=`) is no longer the only way in. Being **signed in
+with an allowed email** is enough, which is what makes it work on a phone without any setup.
+
+The list lives in the Supabase secret `ASK_ALLOWED_EMAILS`, comma separated, and a copy is
+kept in `.secrets/ask_allowed_emails.txt` (git-ignored) so it is not lost:
+
+    cd supa && supabase secrets set \
+      ASK_ALLOWED_EMAILS="$(tr '\n' ',' < ../.secrets/ask_allowed_emails.txt | sed 's/,$//')" \
+      --project-ref <your-project-ref>
+
+It is an ALLOWLIST, not merely "signed in", because anyone can create an account on the
+shared league board and signing up must never become a way to spend the OpenAI key.
+
+Everyone on the list can use the SAME full-board link. Each person signs in as themselves,
+and the board is stored per account -- own name, own draft slot, own roster. The database
+rule only lets you read your own row, so they cannot see each other's boards.
+
+Three states are reported distinctly, so a failure can never be misread again:
+  not signed in         -> "sign in for AI"
+  signed in, not listed -> "AI off for <their email>"
+  session unverifiable  -> "AI sign-in not accepted"
+
+**Every question anyone on this list asks bills to the same OpenAI key.**
+
 **To rotate it:** write a new value into `.secrets/ask_token.txt`, run `supabase secrets set
 ASK_TOKEN=...`, then re-open each browser once with the new `#t=` address.
 
