@@ -10,7 +10,10 @@ const SUPA_URL = window.FL_SUPABASE_URL || '';
 const SUPA_KEY = window.FL_SUPABASE_KEY || '';
 const SYNC = { on:false, user:null, client:null, saving:false, lastPush:0, err:null };
 
-const KEYS = ['fl_taken','fl_mine','fl_slot','fl_owner','fl_setup'];
+// fl_yahoo_me is which team in the league is YOURS, and fl_takenby is which manager
+// took each player. Both were browser-only, so signing in on a phone mid-draft meant
+// choosing your team again and losing every badge. They travel with the account now.
+const KEYS = ['fl_taken','fl_takenby','fl_mine','fl_slot','fl_owner','fl_setup','fl_yahoo_me'];
 function localSnapshot(){
   const o={}; KEYS.forEach(k=>o[k]=localStorage.getItem(k)); return o;
 }
