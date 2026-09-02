@@ -1,0 +1,676 @@
+<title>Cooptown Odds Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+:root{
+  --paper:#F4F3EF; --panel:#FFFFFF; --sunk:#EBEAE5;
+  --ink:#161A1E; --ink-2:#4A5560; --ink-3:#7B8792;
+  --rule:#DBDAD4; --rule-2:#C7C6BF;
+  --accent:#157F78; --accent-soft:#E2F0EE;
+  --good:#2C7A57; --good-soft:#E3F0E9;
+  --bad:#A64039;  --bad-soft:#F6E5E3;
+  --warn:#A97A16; --warn-soft:#F7EEDC;
+  --pos:#2C7A57; --neg:#A64039;
+  --shadow:0 1px 2px rgba(20,26,30,.07),0 8px 24px -12px rgba(20,26,30,.16);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F1418; --panel:#161C21; --sunk:#1C242A;
+    --ink:#E6E8EA; --ink-2:#A2AEB7; --ink-3:#6F7C86;
+    --rule:#263138; --rule-2:#33414A;
+    --accent:#3FB3AA; --accent-soft:#12302F;
+    --good:#54B98A; --good-soft:#122C22;
+    --bad:#E0776D;  --bad-soft:#2E1A18;
+    --warn:#D6A742; --warn-soft:#2C2415;
+    --pos:#54B98A; --neg:#E0776D;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1418; --panel:#161C21; --sunk:#1C242A;
+  --ink:#E6E8EA; --ink-2:#A2AEB7; --ink-3:#6F7C86;
+  --rule:#263138; --rule-2:#33414A;
+  --accent:#3FB3AA; --accent-soft:#12302F;
+  --good:#54B98A; --good-soft:#122C22;
+  --bad:#E0776D;  --bad-soft:#2E1A18;
+  --warn:#D6A742; --warn-soft:#2C2415;
+  --pos:#54B98A; --neg:#E0776D;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -14px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);
+  font-family:"Source Sans 3",ui-sans-serif,system-ui,sans-serif;
+  font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+h1,h2,h3,.disp{font-family:Archivo,ui-sans-serif,system-ui,sans-serif;text-wrap:balance;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* masthead */
+.mast{border-bottom:1px solid var(--rule);background:var(--panel)}
+.mast-in{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;
+  padding:26px 0 20px}
+.brand{display:flex;flex-direction:column;gap:7px;min-width:0}
+.kicker{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--accent);font-weight:600}
+h1{font-size:clamp(27px,4.6vw,40px);font-weight:800;letter-spacing:-.022em;line-height:1.03}
+.thesis{color:var(--ink-2);max-width:60ch;font-size:15px}
+.thesis b{color:var(--ink);font-weight:600}
+.stamp{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);
+  text-align:right;line-height:1.7;white-space:nowrap}
+.tt{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--rule-2);
+  background:var(--sunk);color:var(--ink-2);border-radius:2px;padding:4px 9px;cursor:pointer;
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
+.tt:hover{border-color:var(--accent);color:var(--accent)}
+
+/* tabs */
+.tabs{position:sticky;top:0;z-index:20;background:var(--paper);
+  border-bottom:1px solid var(--rule);overflow-x:auto}
+.tabs-in{display:flex;gap:0;min-width:max-content}
+.tab{appearance:none;background:none;border:0;border-bottom:2px solid transparent;
+  padding:13px 16px;cursor:pointer;color:var(--ink-3);white-space:nowrap;
+  font-family:Archivo,sans-serif;font-weight:600;font-size:13.5px;letter-spacing:.005em;
+  display:flex;align-items:center;gap:8px}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.dot{width:7px;height:7px;border-radius:50%;flex:none}
+.d-good{background:var(--good)} .d-bad{background:var(--bad)} .d-warn{background:var(--warn)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+
+/* verdict strip */
+.verdict{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border-radius:3px;
+  border:1px solid var(--rule);margin:22px 0 18px;background:var(--panel)}
+.verdict.good{border-left:3px solid var(--good);background:var(--good-soft)}
+.verdict.bad{border-left:3px solid var(--bad);background:var(--bad-soft)}
+.verdict.warn{border-left:3px solid var(--warn);background:var(--warn-soft)}
+.v-label{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;font-weight:600;white-space:nowrap;padding-top:2px}
+.verdict.good .v-label{color:var(--good)}
+.verdict.bad .v-label{color:var(--bad)}
+.verdict.warn .v-label{color:var(--warn)}
+.v-body{font-size:14px;color:var(--ink);max-width:78ch}
+.v-body b{font-weight:600}
+
+section[hidden]{display:none!important}
+.sec{padding-bottom:56px}
+h2{font-size:20px;font-weight:700;letter-spacing:-.012em;margin:30px 0 4px}
+.sub{color:var(--ink-2);font-size:13.5px;margin-bottom:14px;max-width:74ch}
+
+/* tables */
+.tblwrap{overflow-x:auto;border:1px solid var(--rule);border-radius:3px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--rule);white-space:nowrap}
+thead th{position:sticky;top:0;background:var(--sunk);z-index:1;
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-2);font-weight:600;cursor:pointer;user-select:none}
+thead th:hover{color:var(--accent)}
+thead th.sorted{color:var(--accent)}
+tbody tr:hover{background:var(--sunk)}
+tbody tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+.team{font-weight:600}
+.muted{color:var(--ink-3)}
+.pos{color:var(--pos)} .neg{color:var(--neg)}
+.pill{display:inline-block;padding:1px 7px;border-radius:2px;font-family:"IBM Plex Mono",monospace;
+  font-size:10.5px;letter-spacing:.05em;font-weight:600;text-transform:uppercase}
+.p-good{background:var(--good-soft);color:var(--good)}
+.p-bad{background:var(--bad-soft);color:var(--bad)}
+.p-warn{background:var(--warn-soft);color:var(--warn)}
+.p-flat{background:var(--sunk);color:var(--ink-3)}
+
+/* confidence bar in a cell */
+.bar{display:block;height:4px;border-radius:2px;background:var(--rule);position:relative;margin-top:4px;min-width:54px}
+.bar i{position:absolute;inset:0 auto 0 0;border-radius:2px;background:var(--accent);display:block}
+
+/* controls */
+.ctl{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-bottom:12px}
+.chk{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--rule-2);
+  background:var(--panel);padding:5px 11px;border-radius:2px;cursor:pointer;font-size:12.5px;color:var(--ink-2)}
+.chk:hover{border-color:var(--accent)}
+.chk input{accent-color:var(--accent);margin:0}
+.chk.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.hint{font-size:12px;color:var(--ink-3)}
+
+/* survivor */
+.sv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:9px}
+.wk{border:1px solid var(--rule);border-radius:3px;background:var(--panel);padding:9px 10px;
+  display:flex;flex-direction:column;gap:5px;position:relative}
+.wk.done{opacity:.5}
+.wk-n{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-3)}
+.wk-t{font-family:Archivo,sans-serif;font-weight:800;font-size:22px;letter-spacing:-.02em;line-height:1}
+.wk-o{font-size:11.5px;color:var(--ink-2)}
+.wk-p{font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:600;color:var(--accent)}
+.wk .bar{min-width:0}
+.wk-src{position:absolute;top:8px;right:9px;font-family:"IBM Plex Mono",monospace;
+  font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.teams{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 4px}
+.tchip{appearance:none;font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:500;
+  border:1px solid var(--rule-2);background:var(--panel);color:var(--ink-2);
+  padding:3px 8px;border-radius:2px;cursor:pointer}
+.tchip:hover{border-color:var(--accent);color:var(--accent)}
+.tchip.used{background:var(--bad-soft);border-color:var(--bad);color:var(--bad);
+  text-decoration:line-through}
+.stat{display:flex;gap:26px;flex-wrap:wrap;padding:14px 16px;border:1px solid var(--rule);
+  border-radius:3px;background:var(--panel);margin-bottom:16px}
+.stat div{display:flex;flex-direction:column;gap:2px}
+.stat .k{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-3)}
+.stat .v{font-family:Archivo,sans-serif;font-weight:800;font-size:26px;letter-spacing:-.02em;line-height:1}
+.stat .v.acc{color:var(--accent)} .stat .v.dim{color:var(--ink-3)}
+
+/* lineups */
+.lus{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px}
+.lu{border:1px solid var(--rule);border-radius:3px;background:var(--panel);overflow:hidden}
+.lu-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  padding:10px 13px;background:var(--sunk);border-bottom:1px solid var(--rule)}
+.lu-h .t{font-family:Archivo,sans-serif;font-weight:700;font-size:13px}
+.lu-h .m{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-2)}
+.lu table{min-width:0}
+.lu td{padding:6px 13px;font-size:13px}
+.slot{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-3);width:46px}
+
+/* evidence */
+.ev{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:14px;margin-bottom:8px}
+.card{border:1px solid var(--rule);border-radius:3px;background:var(--panel);padding:15px 16px}
+.card h3{font-size:14px;font-weight:700;margin-bottom:9px;display:flex;align-items:center;gap:8px}
+.card p{font-size:13.5px;color:var(--ink-2);margin:0 0 9px}
+.card p:last-child{margin-bottom:0}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px solid var(--rule);font-size:13px}
+.kv:last-child{border-bottom:0}
+.kv span:last-child{font-family:"IBM Plex Mono",monospace;font-weight:600}
+.note{border-left:2px solid var(--rule-2);padding:2px 0 2px 14px;color:var(--ink-2);
+  font-size:13.5px;margin:14px 0;max-width:76ch}
+footer{border-top:1px solid var(--rule);padding:22px 0 40px;color:var(--ink-3);font-size:12.5px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:640px){
+  .mast-in{flex-direction:column;align-items:flex-start}
+  .stamp{text-align:left}
+  .stat{gap:18px}
+}
+</style>
+
+<header class="mast"><div class="wrap mast-in">
+  <div class="brand">
+    <div class="kicker">Cooptown &middot; 2026 season</div>
+    <h1>The Odds Desk</h1>
+    <p class="thesis">Six models, 11,596 baseball games and 4,844 college games later, one finding
+      organises this whole board: <b>where you are up against a sportsbook, you lose. Where you are
+      up against other players, you can win.</b> Every tab says which it is.</p>
+  </div>
+  <div class="stamp">
+    built 2026-09-02 12:01<br>
+    NFL wk 1 &middot; CFB wk 2<br>
+    <button class="tt" id="tt" type="button">theme</button>
+  </div>
+</div></header>
+
+<nav class="tabs"><div class="wrap tabs-in" role="tablist" id="tabs">
+  <button class="tab" role="tab" data-p="sv"  aria-selected="true"><i class="dot d-good"></i>Survivor pool</button>
+  <button class="tab" role="tab" data-p="dk"  aria-selected="false"><i class="dot d-good"></i>DraftKings</button>
+  <button class="tab" role="tab" data-p="nfl" aria-selected="false"><i class="dot d-bad"></i>NFL week 1</button>
+  <button class="tab" role="tab" data-p="cfb" aria-selected="false"><i class="dot d-bad"></i>College</button>
+  <button class="tab" role="tab" data-p="par" aria-selected="false"><i class="dot d-bad"></i>Parlays</button>
+  <button class="tab" role="tab" data-p="ev"  aria-selected="false"><i class="dot d-warn"></i>The evidence</button>
+</div></nav>
+
+<main class="wrap">
+
+<section id="sv" class="sec">
+  <div class="verdict good"><div class="v-label">Use this</div><div class="v-body">
+    A survivor pool is <b>not a bet against a bookmaker</b> &mdash; no cut to overcome, and your
+    opponents are the other entrants. Picking the biggest favourite every week burns your best
+    teams in September. This solves the whole season at once as an assignment problem, exactly,
+    and survives <b>1.47&times; more often</b> than that.</div></div>
+
+  <div class="stat">
+    <div><span class="k">Optimal plan</span><span class="v acc" id="svOpt">0.92%</span></div>
+    <div><span class="k">Biggest favourite</span><span class="v dim">0.63%</span></div>
+    <div><span class="k">Improvement</span><span class="v" id="svX">1.47&times;</span></div>
+    <div><span class="k">Weeks planned</span><span class="v" id="svN">18</span></div>
+  </div>
+
+  <h2>Mark the teams you have already used</h2>
+  <p class="sub">Click a team to burn it. The plan re-solves in the browser &mdash; same Hungarian
+    algorithm, running on your click.</p>
+  <div class="teams" id="teams"></div>
+  <div class="ctl"><button class="chk" id="svReset" type="button">Reset all</button>
+    <span class="hint">Weeks 1&ndash;6 use the posted market line. Later weeks use the model.</span></div>
+
+  <h2>The plan</h2>
+  <div class="sv-grid" id="svGrid"></div>
+</section>
+
+<section id="dk" class="sec" hidden>
+  <div class="verdict good"><div class="v-label">Use this</div><div class="v-body">
+    Also not a bet against a bookmaker. Projections split <b>opportunity</b> (stable, a coaching
+    decision) from <b>efficiency</b> (mostly weekly noise), and beat the obvious baseline out of
+    sample: average error <b>4.64 against 4.88</b>, weekly rank correlation <b>+0.72 for running
+    backs</b>. Salaries are live from DraftKings.</div></div>
+
+  <h2>Lineups</h2>
+  <p class="sub">Cash lineups maximise the raw projection. Tournament lineups stack a quarterback
+    with his own receivers &mdash; the same touchdown pays both, which raises variance, and variance
+    is what you need when only the top 1% cashes.</p>
+  <div class="lus" id="lus"></div>
+
+  <h2>Player projections</h2>
+  <p class="sub">Value is projected points per $1,000 of salary. Rookies are missing on purpose:
+    254 of 719 players on this slate have never played an NFL game, and a guessed projection is
+    worse than none.</p>
+  <div class="ctl">
+    <label class="chk"><input type="checkbox" id="fQB">QB</label>
+    <label class="chk"><input type="checkbox" id="fRB">RB</label>
+    <label class="chk"><input type="checkbox" id="fWR">WR</label>
+    <label class="chk"><input type="checkbox" id="fTE">TE</label>
+    <label class="chk"><input type="checkbox" id="fVal">Best value only</label>
+  </div>
+  <div class="tblwrap"><table id="tDK"><thead><tr>
+    <th data-k="name">Player</th><th data-k="pos">Pos</th><th data-k="team">Team</th>
+    <th class="r" data-k="salary">Salary</th><th class="r" data-k="proj">Projected</th>
+    <th class="r" data-k="val">Value</th><th class="r" data-k="implied">Team total</th>
+    <th data-k="opp">Opponent</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section id="nfl" class="sec" hidden>
+  <div class="verdict bad"><div class="v-label">Do not bet this</div><div class="v-body">
+    The model is sound &mdash; it worked out home field at <b>+2.59 points</b> and a margin spread of
+    13.57, both matching reality. It still loses to the closing line: <b>the market picks 67.9% of
+    winners against this model's 63.8%</b>, and the encompassing test puts the model's coefficient
+    at &minus;0.02 (p&nbsp;=&nbsp;0.90). Shown with the market beside it so the gap stays visible.</div></div>
+
+  <h2>Week 1 board</h2>
+  <p class="sub">My line is the margin I expect for the home team. Positive means the home team wins
+    by that much. The market's line is beside it.</p>
+  <div class="ctl">
+    <label class="chk"><input type="checkbox" id="nDis">Only where I disagree with the market</label>
+    <label class="chk"><input type="checkbox" id="nGap">Only gaps over 3 points</label>
+  </div>
+  <div class="tblwrap"><table id="tNFL"><thead><tr>
+    <th data-k="game">Game</th><th data-k="day">Date</th><th data-k="pick">My pick</th>
+    <th class="r" data-k="p">Win %</th><th class="r" data-k="margin">My line</th>
+    <th class="r" data-k="spread">Market</th><th class="r" data-k="gap">Gap</th>
+    <th class="r" data-k="total">Total</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section id="cfb" class="sec" hidden>
+  <div class="verdict bad"><div class="v-label">Do not bet this</div><div class="v-body">
+    Same verdict, wider margins. The market picks <b>73.8%</b> of college winners against this
+    model's <b>70.3%</b>. And a stated weakness: the model <b>badly understates blowouts</b> &mdash;
+    it has Ohio State by 32 where the market says 50.5. It agrees on <b>who</b> wins 88% of the
+    time and disagrees wildly on <b>by how much</b>.</div></div>
+
+  <h2>Next seven days</h2>
+  <p class="sub">FBS only. 884 games against FCS opponents were dropped from training &mdash; a
+    70&ndash;0 win over a small school was inflating ratings.</p>
+  <div class="ctl">
+    <label class="chk"><input type="checkbox" id="cDis">Only where I disagree</label>
+    <label class="chk"><input type="checkbox" id="cClose">Only games inside 10 points</label>
+  </div>
+  <div class="tblwrap"><table id="tCFB"><thead><tr>
+    <th data-k="game">Game</th><th data-k="day">Date</th><th data-k="pick">My pick</th>
+    <th class="r" data-k="p">Win %</th><th class="r" data-k="margin">My line</th>
+    <th class="r" data-k="spread">Market</th><th class="r" data-k="gap">Gap</th>
+    <th class="r" data-k="total">Total</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section id="par" class="sec" hidden>
+  <div class="verdict bad"><div class="v-label">Losing by construction</div><div class="v-body">
+    Every leg pays the bookmaker's cut and <b>the cuts multiply</b>. This is not an opinion about
+    any particular parlay; it is arithmetic that holds before you pick a single team.</div></div>
+
+  <h2>What a parlay actually costs</h2>
+  <p class="sub">Each leg priced at &minus;110, a genuine coin flip. Payout is what the book returns;
+    fair payout is what it should return if the bet were free.</p>
+  <div class="tblwrap"><table><thead><tr><th>Legs</th><th class="r">Payout</th>
+    <th class="r">True chance</th><th class="r">Fair payout</th><th class="r">Your edge</th></tr></thead>
+    <tbody id="tPar"></tbody></table></div>
+
+  <div class="note">A four-leg parlay of coin flips returns <b>83 cents on the dollar</b>. You are not
+    letting it ride &mdash; you are paying the fee four times.</div>
+
+  <h2>The one honest exception</h2>
+  <p class="sub">Legs that move together. Simulated over 400,000 trials, two 50/50 legs:</p>
+  <div class="ev">
+    <div class="card"><h3><span class="pill p-bad">Losing</span>Two unrelated games</h3>
+      <div class="kv"><span>Both hit</span><span>24.96%</span></div>
+      <div class="kv"><span>Your edge</span><span class="neg">&minus;9.04%</span></div>
+      <p style="margin-top:9px">Independent legs. The cuts compound cleanly against you.</p></div>
+    <div class="card"><h3><span class="pill p-good">Positive</span>A QB and his own receiver</h3>
+      <div class="kv"><span>Both hit</span><span>29.90%</span></div>
+      <div class="kv"><span>Your edge</span><span class="pos">+8.96%</span></div>
+      <p style="margin-top:9px">The same touchdown pays both legs. This is the only mathematically
+        defensible parlay &mdash; but books know it, and same-game parlays carry extra juice
+        precisely to claw it back. Check case by case; never assume.</p></div>
+  </div>
+</section>
+
+<section id="ev" class="sec" hidden>
+  <div class="verdict warn"><div class="v-label">Read this first</div><div class="v-body">
+    Everything on this board was tested against held-out seasons, bootstrapped by date, and
+    red-teamed. <b>Three claims were retracted in the process</b> and they are listed here rather
+    than quietly dropped.</div></div>
+
+  <h2>What is actually proven</h2>
+  <div class="ev">
+    <div class="card"><h3><span class="pill p-good">Proven</span>Survivor sequencing</h3>
+      <div class="kv"><span>Optimal plan survives</span><span>0.92%</span></div>
+      <div class="kv"><span>Biggest-favourite survives</span><span>0.63%</span></div>
+      <div class="kv"><span>Improvement</span><span class="pos">1.47&times;</span></div>
+      <p style="margin-top:9px">Exact solution, not an approximation. The gain compounds with the
+        horizon, which is why six weeks shows little and eighteen shows a lot.</p></div>
+    <div class="card"><h3><span class="pill p-good">Proven</span>DFS projections</h3>
+      <div class="kv"><span>My average error</span><span>4.64</span></div>
+      <div class="kv"><span>Baseline error</span><span>4.88</span></div>
+      <div class="kv"><span>RB rank correlation</span><span class="pos">+0.72</span></div>
+      <p style="margin-top:9px">Held out on 2025, which the model never saw while learning.</p></div>
+    <div class="card"><h3><span class="pill p-bad">Loses</span>Betting sides</h3>
+      <div class="kv"><span>NFL &mdash; me vs market</span><span>63.8% / 67.9%</span></div>
+      <div class="kv"><span>College &mdash; me vs market</span><span>70.3% / 73.8%</span></div>
+      <div class="kv"><span>MLB &mdash; 1,138 simulated bets</span><span class="neg">&minus;$526</span></div>
+      <p style="margin-top:9px">Six ways of asking, same answer every time.</p></div>
+    <div class="card"><h3><span class="pill p-warn">Unproven</span>Line shopping</h3>
+      <div class="kv"><span>Always closing price</span><span class="neg">&minus;3.04%</span></div>
+      <div class="kv"><span>Better of two prices</span><span>+0.12%</span></div>
+      <p style="margin-top:9px">The thing I recommended most often and <b>never properly tested</b>
+        &mdash; only one book has history. The proxy above reaches break-even, not profit. The
+        hourly recorder is now accumulating four books so this becomes testable in a few months.</p></div>
+  </div>
+
+  <h2>Retracted</h2>
+  <div class="ev">
+    <div class="card"><h3>&ldquo;Strikeouts do most of the work&rdquo;</h3>
+      <p>Stated from a point estimate with no error bar. With bootstrapped intervals, strikeout rate
+        cannot be distinguished from zero on 4,369 games. <b>Walk rate survives; strikeouts do not.</b></p></div>
+    <div class="card"><h3>&ldquo;The park effect is noise&rdquo;</h3>
+      <p>Half right, and the wrong half. Ballpark is <b>actively harmful</b> and the interval excludes
+        zero. Likely double-counting: a team's batting stats already contain its home park. Removed.</p></div>
+    <div class="card"><h3>&ldquo;Line shopping is the proven edge&rdquo;</h3>
+      <p>Repeated for four days on the strength of daily snapshots and a proxy. <b>It has no
+        backtest.</b> Reworded to what the evidence supports: shopping reduces the loss.</p></div>
+  </div>
+
+  <h2>Bugs found by testing, not by luck</h2>
+  <div class="ev">
+    <div class="card"><h3>The model was frozen</h3>
+      <p>Its data stopped on 29 August while it kept answering questions about September games.
+        Nothing was scheduled to refresh it. Now runs daily at 7:47am with a consistency gate that
+        fails loudly if the two files disagree.</p></div>
+    <div class="card"><h3>Live prices leaking in</h3>
+      <p>Odds captured mid-game look like enormous value on a team already losing 8&ndash;1. Five
+        independent gates now catch them; all four real live prices from that day were rejected and
+        both genuine pregame prices kept.</p></div>
+    <div class="card"><h3>A gate that deleted the point</h3>
+      <p>The disagreement rule threw out a game 4h38m before first pitch &mdash; and book
+        disagreement is exactly where shopping value lives. It was protecting the tool by removing
+        its purpose. Disagreement alone can no longer reject anything.</p></div>
+  </div>
+
+  <h2>NFL power ratings</h2>
+  <p class="sub">Points better than an average team, from Elo on margin with blowout damping and a
+    separately rated quarterback. This is what drives the survivor plan after week 6.</p>
+  <div class="tblwrap"><table id="tRat"><thead><tr><th>Team</th>
+    <th class="r" data-k="r">Rating</th><th>Strength</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+</main>
+<footer class="wrap">
+  Built from 11,596 MLB games, 7,276 NFL games and 3,960 FBS games, all with closing lines.
+  Sources: MLB StatsAPI, ESPN, DraftKings, FanDuel, Pinnacle, Bovada, nflverse.
+  Projections are estimates, not promises &mdash; and the tabs marked in red are the ones the
+  evidence says not to bet.
+</footer>
+<script id="DATA" type="application/json">{"nfl":{"week":1,"games":[{"away":"NE","home":"SEA","day":"2026-09-09","margin":5.8,"p":0.6659,"spread":3.5,"total":44.5},{"away":"SF","home":"LA","day":"2026-09-10","margin":5.7,"p":0.6633,"spread":3.5,"total":48.5},{"away":"ARI","home":"LAC","day":"2026-09-13","margin":5.8,"p":0.6662,"spread":10.5,"total":46.5},{"away":"ATL","home":"PIT","day":"2026-09-13","margin":4.4,"p":0.6259,"spread":3.0,"total":41.5},{"away":"BAL","home":"IND","day":"2026-09-13","margin":-0.2,"p":0.4955,"spread":-3.5,"total":48.5},{"away":"BUF","home":"HOU","day":"2026-09-13","margin":1.3,"p":0.5367,"spread":-1.5,"total":44.5},{"away":"CHI","home":"CAR","day":"2026-09-13","margin":-1.3,"p":0.4625,"spread":-2.5,"total":47.5},{"away":"CLE","home":"JAX","day":"2026-09-13","margin":7.6,"p":0.7131,"spread":7.5,"total":40.5},{"away":"DAL","home":"NYG","day":"2026-09-13","margin":2.1,"p":0.561,"spread":-2.5,"total":48.5},{"away":"GB","home":"MIN","day":"2026-09-13","margin":1.9,"p":0.5558,"spread":1.5,"total":45.5},{"away":"MIA","home":"LV","day":"2026-09-13","margin":-0.8,"p":0.4765,"spread":3.5,"total":40.5},{"away":"NO","home":"DET","day":"2026-09-13","margin":8.0,"p":0.7228,"spread":7.0,"total":48.5},{"away":"NYJ","home":"TEN","day":"2026-09-13","margin":3.0,"p":0.5869,"spread":3.0,"total":38.5},{"away":"TB","home":"CIN","day":"2026-09-13","margin":1.5,"p":0.5437,"spread":3.5,"total":51.5},{"away":"WAS","home":"PHI","day":"2026-09-13","margin":7.3,"p":0.7041,"spread":4.5,"total":47.5},{"away":"DEN","home":"KC","day":"2026-09-14","margin":1.9,"p":0.5554,"spread":3.0,"total":42.5}]},"ncaaf":{"games":[{"away":"Massachusetts Minutemen","home":"Rutgers Scarlet Knights","day":"2026-09-03","margin":19.5,"p":0.8735,"spread":28.5,"total":51.5,"neutral":false},{"away":"Akron Zips","home":"Wake Forest Demon Deacons","day":"2026-09-03","margin":11.8,"p":0.7563,"spread":24.5,"total":48.5,"neutral":false},{"away":"Colorado Buffaloes","home":"Georgia Tech Yellow Jackets","day":"2026-09-03","margin":7.4,"p":0.6685,"spread":6.5,"total":51.5,"neutral":false},{"away":"UAB Blazers","home":"Illinois Fighting Illini","day":"2026-09-03","margin":12.5,"p":0.7688,"spread":27.5,"total":54.5,"neutral":false},{"away":"San Jos\u00e9 State Spartans","home":"Eastern Michigan Eagles","day":"2026-09-04","margin":4.0,"p":0.5927,"spread":3.0,"total":56.5,"neutral":false},{"away":"UTEP Miners","home":"Oklahoma Sooners","day":"2026-09-04","margin":17.6,"p":0.8491,"spread":41.5,"total":51.5,"neutral":false},{"away":"Toledo Rockets","home":"Michigan State Spartans","day":"2026-09-04","margin":-8.2,"p":0.3154,"spread":9.5,"total":47.5,"neutral":false},{"away":"Miami Hurricanes","home":"Stanford Cardinal","day":"2026-09-04","margin":-17.6,"p":0.1509,"spread":-24.5,"total":47.5,"neutral":false},{"away":"Fresno State Bulldogs","home":"USC Trojans","day":"2026-09-04","margin":9.4,"p":0.709,"spread":21.5,"total":51.5,"neutral":false},{"away":"North Texas Mean Green","home":"Indiana Hoosiers","day":"2026-09-05","margin":16.5,"p":0.8331,"spread":40.5,"total":55.5,"neutral":false},{"away":"East Carolina Pirates","home":"Alabama Crimson Tide","day":"2026-09-05","margin":8.9,"p":0.6984,"spread":27.5,"total":52.5,"neutral":false},{"away":"Oregon State Beavers","home":"Houston Cougars","day":"2026-09-05","margin":9.1,"p":0.703,"spread":21.0,"total":49.5,"neutral":false},{"away":"Coastal Carolina Chanticleers","home":"West Virginia Mountaineers","day":"2026-09-05","margin":5.0,"p":0.6151,"spread":21.0,"total":56.5,"neutral":false},{"away":"Ohio Bobcats","home":"Nebraska Cornhuskers","day":"2026-09-05","margin":-0.8,"p":0.4803,"spread":23.5,"total":45.5,"neutral":false},{"away":"Liberty Flames","home":"James Madison Dukes","day":"2026-09-05","margin":13.0,"p":0.7776,"spread":6.5,"total":50.5,"neutral":false},{"away":"Ball State Cardinals","home":"Ohio State Buckeyes","day":"2026-09-05","margin":32.2,"p":0.9706,"spread":50.5,"total":55.5,"neutral":false},{"away":"Miami (OH) RedHawks","home":"Pittsburgh Panthers","day":"2026-09-05","margin":4.8,"p":0.6098,"spread":16.5,"total":48.5,"neutral":false},{"away":"Kent State Golden Flashes","home":"South Carolina Gamecocks","day":"2026-09-05","margin":20.3,"p":0.883,"spread":35.5,"total":54.5,"neutral":false},{"away":"Boise State Broncos","home":"Oregon Ducks","day":"2026-09-05","margin":14.1,"p":0.796,"spread":24.5,"total":51.5,"neutral":false},{"away":"Texas State Bobcats","home":"Texas Longhorns","day":"2026-09-05","margin":10.1,"p":0.7223,"spread":29.5,"total":59.5,"neutral":false},{"away":"Marshall Thundering Herd","home":"Penn State Nittany Lions","day":"2026-09-05","margin":13.6,"p":0.7877,"spread":24.5,"total":52.5,"neutral":false},{"away":"Baylor Bears","home":"Auburn Tigers","day":"2026-09-05","margin":2.9,"p":0.5672,"spread":7.5,"total":58.5,"neutral":true},{"away":"Boston College Eagles","home":"Cincinnati Bearcats","day":"2026-09-05","margin":6.3,"p":0.6446,"spread":7.5,"total":49.5,"neutral":false},{"away":"Tulane Green Wave","home":"Duke Blue Devils","day":"2026-09-05","margin":1.1,"p":0.5247,"spread":7.5,"total":51.5,"neutral":false},{"away":"Oklahoma State Cowboys","home":"Tulsa Golden Hurricane","day":"2026-09-05","margin":2.4,"p":0.5557,"spread":-13.5,"total":59.5,"neutral":false},{"away":"Northern Illinois Huskies","home":"Iowa Hawkeyes","day":"2026-09-05","margin":15.9,"p":0.8242,"spread":31.5,"total":44.5,"neutral":false},{"away":"Wyoming Cowboys","home":"Colorado State Rams","day":"2026-09-05","margin":-1.4,"p":0.4678,"spread":3.0,"total":46.5,"neutral":false},{"away":"Missouri State Bears","home":"Texas A&M Aggies","day":"2026-09-05","margin":15.6,"p":0.8206,"spread":40.5,"total":53.5,"neutral":false},{"away":"Arkansas State Red Wolves","home":"Memphis Tigers","day":"2026-09-05","margin":11.6,"p":0.7523,"spread":11.5,"total":52.5,"neutral":false},{"away":"Florida International Panthers","home":"South Florida Bulls","day":"2026-09-05","margin":13.0,"p":0.7768,"spread":14.0,"total":52.5,"neutral":false},{"away":"Sam Houston Bearkats","home":"Troy Trojans","day":"2026-09-05","margin":12.0,"p":0.7593,"spread":16.5,"total":54.5,"neutral":false},{"away":"Clemson Tigers","home":"LSU Tigers","day":"2026-09-05","margin":0.0,"p":0.5001,"spread":10.0,"total":50.5,"neutral":false},{"away":"Western Michigan Broncos","home":"Michigan Wolverines","day":"2026-09-05","margin":9.8,"p":0.717,"spread":27.5,"total":48.5,"neutral":false},{"away":"UL Monroe Warhawks","home":"Mississippi State Bulldogs","day":"2026-09-05","margin":12.0,"p":0.7592,"spread":28.5,"total":55.5,"neutral":false},{"away":"Florida Atlantic Owls","home":"Florida Gators","day":"2026-09-05","margin":10.5,"p":0.7303,"spread":26.5,"total":59.5,"neutral":false},{"away":"UNLV Rebels","home":"Hawai'i Rainbow Warriors","day":"2026-09-05","margin":-5.4,"p":0.3747,"spread":-3.0,"total":56.5,"neutral":false},{"away":"Central Michigan Chippewas","home":"New Mexico Lobos","day":"2026-09-05","margin":7.8,"p":0.6763,"spread":10.0,"total":46.5,"neutral":false},{"away":"UCLA Bruins","home":"California Golden Bears","day":"2026-09-05","margin":5.0,"p":0.6145,"spread":-1.5,"total":53.5,"neutral":false},{"away":"Western Kentucky Hilltoppers","home":"Nevada Wolf Pack","day":"2026-09-05","margin":-4.5,"p":0.3969,"spread":-1.5,"total":52.5,"neutral":false},{"away":"Washington State Cougars","home":"Washington Huskies","day":"2026-09-06","margin":8.5,"p":0.6905,"spread":23.5,"total":50.5,"neutral":false},{"away":"Wisconsin Badgers","home":"Notre Dame Fighting Irish","day":"2026-09-06","margin":19.1,"p":0.8685,"spread":20.5,"total":47.5,"neutral":true},{"away":"Louisville Cardinals","home":"Ole Miss Rebels","day":"2026-09-06","margin":5.6,"p":0.6291,"spread":7.0,"total":55.5,"neutral":true},{"away":"SMU Mustangs","home":"Florida State Seminoles","day":"2026-09-07","margin":-5.1,"p":0.3828,"spread":-3.0,"total":52.5,"neutral":false}]},"survivor":{"plan":[{"week":1,"team":"LAC","p":0.7816,"opp":"ARI","ha":"vs","src":"market"},{"week":2,"team":"SEA","p":0.7706,"opp":"ARI","ha":"at","src":"market"},{"week":3,"team":"SF","p":0.8029,"opp":"ARI","ha":"vs","src":"market"},{"week":4,"team":"CHI","p":0.7355,"opp":"NYJ","ha":"vs","src":"market"},{"week":5,"team":"NE","p":0.7355,"opp":"LV","ha":"vs","src":"market"},{"week":6,"team":"LA","p":0.8413,"opp":"ARI","ha":"vs","src":"market"},{"week":7,"team":"PHI","p":0.7238,"opp":"DAL","ha":"vs","src":"model"},{"week":8,"team":"CIN","p":0.7384,"opp":"TEN","ha":"vs","src":"model"},{"week":9,"team":"KC","p":0.8096,"opp":"NYJ","ha":"vs","src":"model"},{"week":10,"team":"BUF","p":0.7695,"opp":"NYJ","ha":"at","src":"model"},{"week":11,"team":"DEN","p":0.8204,"opp":"LV","ha":"vs","src":"model"},{"week":12,"team":"JAX","p":0.809,"opp":"TEN","ha":"vs","src":"model"},{"week":13,"team":"MIN","p":0.7448,"opp":"CAR","ha":"vs","src":"model"},{"week":14,"team":"DET","p":0.8444,"opp":"TEN","ha":"vs","src":"model"},{"week":15,"team":"GB","p":0.7081,"opp":"MIA","ha":"vs","src":"model"},{"week":16,"team":"BAL","p":0.7755,"opp":"CLE","ha":"vs","src":"model"},{"week":17,"team":"ARI","p":0.6605,"opp":"LV","ha":"vs","src":"model"},{"week":18,"team":"HOU","p":0.8304,"opp":"TEN","ha":"vs","src":"model"}],"greedy":[{"week":1,"team":"LAC","p":0.7816,"opp":"ARI","ha":"vs"},{"week":2,"team":"SF","p":0.7816,"opp":"MIA","ha":"vs"},{"week":3,"team":"DET","p":0.7592,"opp":"NYJ","ha":"vs"},{"week":4,"team":"CHI","p":0.7355,"opp":"NYJ","ha":"vs"},{"week":5,"team":"NE","p":0.7355,"opp":"LV","ha":"vs"},{"week":6,"team":"LA","p":0.8413,"opp":"ARI","ha":"vs"},{"week":7,"team":"PHI","p":0.7238,"opp":"DAL","ha":"vs"},{"week":8,"team":"GB","p":0.7656,"opp":"CAR","ha":"vs"},{"week":9,"team":"SEA","p":0.8399,"opp":"ARI","ha":"vs"},{"week":10,"team":"BUF","p":0.7695,"opp":"NYJ","ha":"at"},{"week":11,"team":"DEN","p":0.8204,"opp":"LV","ha":"vs"},{"week":12,"team":"JAX","p":0.809,"opp":"TEN","ha":"vs"},{"week":13,"team":"MIN","p":0.7448,"opp":"CAR","ha":"vs"},{"week":14,"team":"BAL","p":0.6556,"opp":"TB","ha":"vs"},{"week":15,"team":"TB","p":0.673,"opp":"NO","ha":"vs"},{"week":16,"team":"PIT","p":0.6938,"opp":"CAR","ha":"vs"},{"week":17,"team":"ARI","p":0.6605,"opp":"LV","ha":"vs"},{"week":18,"team":"HOU","p":0.8304,"opp":"TEN","ha":"vs"}],"optimal_survival":0.009214,"greedy_survival":0.006274,"ratings":[{"team":"SEA","r":7.0},{"team":"BUF","r":5.4},{"team":"LA","r":5.1},{"team":"DET","r":4.4},{"team":"HOU","r":3.7},{"team":"BAL","r":3.6},{"team":"PHI","r":3.6},{"team":"DEN","r":3.0},{"team":"NE","r":2.8},{"team":"JAX","r":2.6},{"team":"GB","r":2.4},{"team":"KC","r":2.1},{"team":"MIN","r":1.5},{"team":"SF","r":1.0},{"team":"TB","r":0.8},{"team":"LAC","r":0.4},{"team":"CHI","r":0.3},{"team":"IND","r":0.0},{"team":"STL","r":-0.1},{"team":"SD","r":-0.1},{"team":"PIT","r":-0.5},{"team":"CIN","r":-0.6},{"team":"OAK","r":-0.8},{"team":"DAL","r":-1.8},{"team":"MIA","r":-2.4},{"team":"NYG","r":-2.5},{"team":"WAS","r":-2.5},{"team":"NO","r":-2.6},{"team":"ATL","r":-2.8},{"team":"ARI","r":-3.8},{"team":"CLE","r":-4.0},{"team":"CAR","r":-4.7},{"team":"TEN","r":-6.6},{"team":"LV","r":-6.8},{"team":"NYJ","r":-7.1}],"grid":{"SEA":{"1":{"p":0.6023,"opp":"NE","ha":"vs","src":"market"},"2":{"p":0.7706,"opp":"ARI","ha":"at","src":"market"},"3":{"p":0.6023,"opp":"WAS","ha":"at","src":"market"},"4":{"p":0.5879,"opp":"LAC","ha":"vs","src":"market"},"5":{"p":0.6023,"opp":"SF","ha":"vs","src":"market"},"6":{"p":0.5735,"opp":"DEN","ha":"at","src":"market"},"7":{"p":0.7117,"opp":"KC","ha":"vs","src":"model"},"8":{"p":0.7553,"opp":"CHI","ha":"vs","src":"model"},"9":{"p":0.8399,"opp":"ARI","ha":"vs","src":"model"},"10":{"p":0.7967,"opp":"LV","ha":"at","src":"model"},"12":{"p":0.5991,"opp":"SF","ha":"at","src":"model"},"13":{"p":0.8022,"opp":"DAL","ha":"vs","src":"model"},"14":{"p":0.8156,"opp":"NYG","ha":"vs","src":"model"},"15":{"p":0.5251,"opp":"PHI","ha":"at","src":"model"},"16":{"p":0.4558,"opp":"LA","ha":"vs","src":"market"},"17":{"p":0.7515,"opp":"CAR","ha":"at","src":"model"},"18":{"p":0.4799,"opp":"LA","ha":"at","src":"model"}},"NE":{"1":{"p":0.3977,"opp":"SEA","ha":"at","src":"market"},"2":{"p":0.6306,"opp":"PIT","ha":"vs","src":"market"},"3":{"p":0.4558,"opp":"JAX","ha":"at","src":"market"},"4":{"p":0.4121,"opp":"BUF","ha":"at","src":"market"},"5":{"p":0.7355,"opp":"LV","ha":"vs","src":"market"},"6":{"p":0.7592,"opp":"NYJ","ha":"vs","src":"market"},"7":{"p":0.4558,"opp":"CHI","ha":"at","src":"market"},"8":{"p":0.5762,"opp":"MIA","ha":"at","src":"model"},"9":{"p":0.5878,"opp":"GB","ha":"vs","src":"model"},"10":{"p":0.4558,"opp":"DET","ha":"at","src":"market"},"12":{"p":0.4945,"opp":"LAC","ha":"at","src":"model"},"13":{"p":0.5008,"opp":"BUF","ha":"vs","src":"model"},"14":{"p":0.6134,"opp":"MIN","ha":"vs","src":"model"},"15":{"p":0.4453,"opp":"KC","ha":"at","src":"model"},"16":{"p":0.7076,"opp":"NYJ","ha":"at","src":"model"},"17":{"p":0.5715,"opp":"DEN","ha":"vs","src":"model"},"18":{"p":0.7182,"opp":"MIA","ha":"vs","src":"model"}},"LA":{"1":{"p":0.6023,"opp":"SF","ha":"vs","src":"market"},"2":{"p":0.7355,"opp":"NYG","ha":"vs","src":"market"},"3":{"p":0.5879,"opp":"DEN","ha":"at","src":"market"},"4":{"p":0.5442,"opp":"PHI","ha":"at","src":"market"},"5":{"p":0.5879,"opp":"BUF","ha":"vs","src":"market"},"6":{"p":0.8413,"opp":"ARI","ha":"vs","src":"market"},"7":{"p":0.7542,"opp":"LV","ha":"at","src":"model"},"8":{"p":0.7053,"opp":"LAC","ha":"vs","src":"model"},"9":{"p":0.645,"opp":"WAS","ha":"at","src":"model"},"10":{"p":0.6796,"opp":"ARI","ha":"at","src":"model"},"12":{"p":0.6581,"opp":"GB","ha":"vs","src":"market"},"13":{"p":0.6614,"opp":"KC","ha":"vs","src":"model"},"14":{"p":0.5433,"opp":"SF","ha":"at","src":"model"},"15":{"p":0.7604,"opp":"DAL","ha":"vs","src":"model"},"16":{"p":0.5442,"opp":"SEA","ha":"at","src":"market"},"17":{"p":0.5499,"opp":"TB","ha":"at","src":"model"},"18":{"p":0.5201,"opp":"SEA","ha":"vs","src":"model"}},"SF":{"1":{"p":0.3977,"opp":"LA","ha":"at","src":"market"},"2":{"p":0.7816,"opp":"MIA","ha":"vs","src":"market"},"3":{"p":0.8029,"opp":"ARI","ha":"vs","src":"market"},"4":{"p":0.5735,"opp":"DEN","ha":"vs","src":"market"},"5":{"p":0.3977,"opp":"SEA","ha":"at","src":"market"},"6":{"p":0.6581,"opp":"WAS","ha":"vs","src":"market"},"7":{"p":0.5364,"opp":"ATL","ha":"at","src":"model"},"9":{"p":0.7798,"opp":"LV","ha":"vs","src":"model"},"10":{"p":0.5084,"opp":"DAL","ha":"at","src":"model"},"11":{"p":0.6306,"opp":"MIN","ha":"vs","src":"market"},"12":{"p":0.4009,"opp":"SEA","ha":"vs","src":"model"},"13":{"p":0.528,"opp":"NYG","ha":"at","src":"model"},"14":{"p":0.4567,"opp":"LA","ha":"vs","src":"model"},"15":{"p":0.4417,"opp":"LAC","ha":"at","src":"model"},"16":{"p":0.3935,"opp":"KC","ha":"at","src":"model"},"17":{"p":0.5018,"opp":"PHI","ha":"vs","src":"model"},"18":{"p":0.5656,"opp":"ARI","ha":"at","src":"model"}},"CAR":{"1":{"p":0.4265,"opp":"CHI","ha":"vs","src":"market"},"2":{"p":0.4558,"opp":"ATL","ha":"at","src":"market"},"3":{"p":0.5442,"opp":"CLE","ha":"at","src":"market"},"4":{"p":0.4121,"opp":"DET","ha":"vs","src":"market"},"6":{"p":0.3151,"opp":"PHI","ha":"at","src":"market"},"7":{"p":0.4133,"opp":"TB","ha":"vs","src":"model"},"8":{"p":0.2344,"opp":"GB","ha":"at","src":"model"},"9":{"p":0.3516,"opp":"DEN","ha":"vs","src":"model"},"10":{"p":0.3636,"opp":"NO","ha":"at","src":"model"},"11":{"p":0.3347,"opp":"BAL","ha":"vs","src":"model"},"12":{"p":0.2728,"opp":"TB","ha":"at","src":"model"},"13":{"p":0.2552,"opp":"MIN","ha":"at","src":"model"},"14":{"p":0.5145,"opp":"NO","ha":"vs","src":"model"},"15":{"p":0.4552,"opp":"CIN","ha":"vs","src":"model"},"16":{"p":0.3062,"opp":"PIT","ha":"at","src":"model"},"17":{"p":0.2485,"opp":"SEA","ha":"vs","src":"model"},"18":{"p":0.5192,"opp":"ATL","ha":"vs","src":"model"}},"CHI":{"1":{"p":0.5735,"opp":"CAR","ha":"at","src":"market"},"2":{"p":0.6023,"opp":"MIN","ha":"vs","src":"market"},"3":{"p":0.5442,"opp":"PHI","ha":"vs","src":"market"},"4":{"p":0.7355,"opp":"NYJ","ha":"vs","src":"market"},"5":{"p":0.4121,"opp":"GB","ha":"at","src":"market"},"6":{"p":0.5879,"opp":"ATL","ha":"at","src":"market"},"7":{"p":0.5442,"opp":"NE","ha":"vs","src":"market"},"8":{"p":0.2447,"opp":"SEA","ha":"at","src":"model"},"9":{"p":0.5613,"opp":"TB","ha":"vs","src":"model"},"11":{"p":0.659,"opp":"NO","ha":"vs","src":"model"},"12":{"p":0.4265,"opp":"DET","ha":"at","src":"market"},"13":{"p":0.51,"opp":"JAX","ha":"vs","src":"model"},"14":{"p":0.5017,"opp":"MIA","ha":"at","src":"model"},"15":{"p":0.2839,"opp":"BUF","ha":"at","src":"model"},"16":{"p":0.5442,"opp":"GB","ha":"vs","src":"market"},"17":{"p":0.4548,"opp":"DET","ha":"vs","src":"model"},"18":{"p":0.3879,"opp":"MIN","ha":"at","src":"model"}},"CIN":{"1":{"p":0.6023,"opp":"TB","ha":"vs","src":"market"},"2":{"p":0.4265,"opp":"HOU","ha":"at","src":"market"},"3":{"p":0.5442,"opp":"PIT","ha":"at","src":"market"},"4":{"p":0.5735,"opp":"JAX","ha":"vs","src":"market"},"5":{"p":0.6716,"opp":"MIA","ha":"at","src":"market"},"7":{"p":0.3977,"opp":"BAL","ha":"at","src":"market"},"8":{"p":0.7384,"opp":"TEN","ha":"vs","src":"model"},"9":{"p":0.6306,"opp":"ATL","ha":"at","src":"market"},"10":{"p":0.5728,"opp":"PIT","ha":"vs","src":"model"},"11":{"p":0.4791,"opp":"WAS","ha":"at","src":"model"},"12":{"p":0.6337,"opp":"NO","ha":"vs","src":"model"},"13":{"p":0.5229,"opp":"CLE","ha":"at","src":"model"},"14":{"p":0.4967,"opp":"KC","ha":"vs","src":"model"},"15":{"p":0.5448,"opp":"CAR","ha":"at","src":"model"},"16":{"p":0.4044,"opp":"IND","ha":"at","src":"model"},"17":{"p":0.4516,"opp":"BAL","ha":"vs","src":"model"},"18":{"p":0.671,"opp":"CLE","ha":"vs","src":"model"}},"TB":{"1":{"p":0.3977,"opp":"CIN","ha":"at","src":"market"},"2":{"p":0.6581,"opp":"CLE","ha":"vs","src":"market"},"3":{"p":0.5442,"opp":"MIN","ha":"vs","src":"market"},"4":{"p":0.4558,"opp":"GB","ha":"vs","src":"market"},"5":{"p":0.3977,"opp":"DAL","ha":"at","src":"market"},"6":{"p":0.5442,"opp":"PIT","ha":"vs","src":"market"},"7":{"p":0.5867,"opp":"CAR","ha":"at","src":"model"},"8":{"p":0.6772,"opp":"ATL","ha":"vs","src":"model"},"9":{"p":0.4387,"opp":"CHI","ha":"at","src":"model"},"11":{"p":0.3227,"opp":"DET","ha":"at","src":"model"},"12":{"p":0.7272,"opp":"CAR","ha":"vs","src":"model"},"13":{"p":0.5878,"opp":"LAC","ha":"vs","src":"model"},"14":{"p":0.3444,"opp":"BAL","ha":"at","src":"model"},"15":{"p":0.673,"opp":"NO","ha":"vs","src":"model"},"16":{"p":0.5298,"opp":"ATL","ha":"at","src":"model"},"17":{"p":0.4501,"opp":"LA","ha":"vs","src":"model"},"18":{"p":0.5251,"opp":"NO","ha":"at","src":"model"}},"DET":{"1":{"p":0.698,"opp":"NO","ha":"vs","src":"market"},"2":{"p":0.4121,"opp":"BUF","ha":"at","src":"market"},"3":{"p":0.7592,"opp":"NYJ","ha":"vs","src":"market"},"4":{"p":0.5879,"opp":"CAR","ha":"at","src":"market"},"5":{"p":0.7355,"opp":"ARI","ha":"at","src":"market"},"7":{"p":0.6331,"opp":"GB","ha":"vs","src":"model"},"8":{"p":0.6578,"opp":"MIN","ha":"vs","src":"model"},"9":{"p":0.6219,"opp":"MIA","ha":"at","src":"model"},"10":{"p":0.5442,"opp":"NE","ha":"vs","src":"market"},"11":{"p":0.6773,"opp":"TB","ha":"vs","src":"model"},"12":{"p":0.5735,"opp":"CHI","ha":"vs","src":"market"},"13":{"p":0.634,"opp":"ATL","ha":"at","src":"model"},"14":{"p":0.8444,"opp":"TEN","ha":"vs","src":"model"},"15":{"p":0.5085,"opp":"MIN","ha":"at","src":"model"},"16":{"p":0.76,"opp":"NYG","ha":"vs","src":"model"},"17":{"p":0.5452,"opp":"CHI","ha":"at","src":"model"},"18":{"p":0.4821,"opp":"GB","ha":"at","src":"model"}},"NO":{"1":{"p":0.302,"opp":"DET","ha":"at","src":"market"},"2":{"p":0.2893,"opp":"BAL","ha":"at","src":"market"},"3":{"p":0.6023,"opp":"LV","ha":"vs","src":"market"},"4":{"p":0.5735,"opp":"ATL","ha":"vs","src":"market"},"5":{"p":0.4558,"opp":"MIN","ha":"vs","src":"market"},"6":{"p":0.4265,"opp":"NYG","ha":"at","src":"market"},"7":{"p":0.4265,"opp":"PIT","ha":"vs","src":"market"},"9":{"p":0.6155,"opp":"CLE","ha":"vs","src":"model"},"10":{"p":0.6364,"opp":"CAR","ha":"vs","src":"model"},"11":{"p":0.341,"opp":"CHI","ha":"at","src":"model"},"12":{"p":0.3663,"opp":"CIN","ha":"at","src":"model"},"13":{"p":0.4274,"opp":"GB","ha":"vs","src":"model"},"14":{"p":0.4855,"opp":"CAR","ha":"at","src":"model"},"15":{"p":0.327,"opp":"TB","ha":"at","src":"model"},"16":{"p":0.6096,"opp":"ARI","ha":"vs","src":"model"},"17":{"p":0.4283,"opp":"ATL","ha":"at","src":"model"},"18":{"p":0.4749,"opp":"TB","ha":"vs","src":"model"}},"HOU":{"1":{"p":0.4558,"opp":"BUF","ha":"vs","src":"market"},"2":{"p":0.5735,"opp":"CIN","ha":"vs","src":"market"},"3":{"p":0.5442,"opp":"IND","ha":"at","src":"market"},"4":{"p":0.5735,"opp":"DAL","ha":"vs","src":"market"},"5":{"p":0.6023,"opp":"TEN","ha":"at","src":"market"},"6":{"p":0.4558,"opp":"JAX","ha":"at","src":"market"},"7":{"p":0.6581,"opp":"NYG","ha":"vs","src":"market"},"9":{"p":0.5189,"opp":"LAC","ha":"at","src":"model"},"10":{"p":0.646,"opp":"CLE","ha":"at","src":"model"},"11":{"p":0.6773,"opp":"IND","ha":"vs","src":"model"},"12":{"p":0.5775,"opp":"BAL","ha":"vs","src":"model"},"13":{"p":0.546,"opp":"PIT","ha":"at","src":"model"},"14":{"p":0.6044,"opp":"WAS","ha":"at","src":"model"},"15":{"p":0.608,"opp":"JAX","ha":"vs","src":"model"},"16":{"p":0.4265,"opp":"PHI","ha":"at","src":"market"},"17":{"p":0.4594,"opp":"GB","ha":"at","src":"model"},"18":{"p":0.8304,"opp":"TEN","ha":"vs","src":"model"}},"BUF":{"1":{"p":0.5442,"opp":"HOU","ha":"at","src":"market"},"2":{"p":0.5879,"opp":"DET","ha":"vs","src":"market"},"3":{"p":0.5879,"opp":"LAC","ha":"vs","src":"market"},"4":{"p":0.5879,"opp":"NE","ha":"vs","src":"market"},"5":{"p":0.4121,"opp":"LA","ha":"at","src":"market"},"6":{"p":0.6849,"opp":"LV","ha":"at","src":"market"},"8":{"p":0.6274,"opp":"BAL","ha":"vs","src":"model"},"9":{"p":0.5373,"opp":"MIN","ha":"at","src":"model"},"10":{"p":0.7695,"opp":"NYJ","ha":"at","src":"model"},"11":{"p":0.7787,"opp":"MIA","ha":"vs","src":"model"},"12":{"p":0.5735,"opp":"KC","ha":"vs","src":"market"},"13":{"p":0.4992,"opp":"NE","ha":"at","src":"model"},"14":{"p":0.5109,"opp":"GB","ha":"at","src":"model"},"15":{"p":0.7161,"opp":"CHI","ha":"vs","src":"model"},"16":{"p":0.5442,"opp":"DEN","ha":"at","src":"market"},"17":{"p":0.6491,"opp":"MIA","ha":"at","src":"model"},"18":{"p":0.8691,"opp":"NYJ","ha":"vs","src":"model"}},"IND":{"1":{"p":0.3977,"opp":"BAL","ha":"vs","src":"market"},"2":{"p":0.3151,"opp":"KC","ha":"at","src":"market"},"3":{"p":0.4558,"opp":"HOU","ha":"vs","src":"market"},"4":{"p":0.4558,"opp":"WAS","ha":"at","src":"market"},"5":{"p":0.4265,"opp":"PIT","ha":"at","src":"market"},"6":{"p":0.6023,"opp":"TEN","ha":"vs","src":"market"},"7":{"p":0.4265,"opp":"MIN","ha":"at","src":"market"},"8":{"p":0.3525,"opp":"JAX","ha":"at","src":"model"},"9":{"p":0.6303,"opp":"DAL","ha":"vs","src":"model"},"10":{"p":0.6446,"opp":"MIA","ha":"vs","src":"model"},"11":{"p":0.3227,"opp":"HOU","ha":"at","src":"model"},"12":{"p":0.6487,"opp":"NYG","ha":"vs","src":"model"},"14":{"p":0.3248,"opp":"PHI","ha":"at","src":"model"},"15":{"p":0.619,"opp":"TEN","ha":"at","src":"model"},"16":{"p":0.5956,"opp":"CIN","ha":"vs","src":"model"},"17":{"p":0.5426,"opp":"CLE","ha":"at","src":"model"},"18":{"p":0.5026,"opp":"JAX","ha":"vs","src":"model"}},"BAL":{"1":{"p":0.6023,"opp":"IND","ha":"at","src":"market"},"2":{"p":0.7107,"opp":"NO","ha":"vs","src":"market"},"3":{"p":0.5735,"opp":"DAL","ha":"at","src":"market"},"4":{"p":0.7355,"opp":"TEN","ha":"vs","src":"market"},"5":{"p":0.6306,"opp":"ATL","ha":"at","src":"market"},"6":{"p":0.6849,"opp":"CLE","ha":"at","src":"market"},"7":{"p":0.6023,"opp":"CIN","ha":"vs","src":"market"},"8":{"p":0.3726,"opp":"BUF","ha":"at","src":"model"},"9":{"p":0.6069,"opp":"JAX","ha":"vs","src":"model"},"10":{"p":0.6663,"opp":"LAC","ha":"vs","src":"model"},"11":{"p":0.6653,"opp":"CAR","ha":"at","src":"model"},"12":{"p":0.4225,"opp":"HOU","ha":"at","src":"model"},"14":{"p":0.6556,"opp":"TB","ha":"vs","src":"model"},"15":{"p":0.5449,"opp":"PIT","ha":"at","src":"model"},"16":{"p":0.7755,"opp":"CLE","ha":"vs","src":"model"},"17":{"p":0.5484,"opp":"CIN","ha":"at","src":"model"},"18":{"p":0.6907,"opp":"PIT","ha":"vs","src":"model"}},"JAX":{"1":{"p":0.7107,"opp":"CLE","ha":"vs","src":"market"},"2":{"p":0.4265,"opp":"DEN","ha":"at","src":"market"},"3":{"p":0.5442,"opp":"NE","ha":"vs","src":"market"},"4":{"p":0.4265,"opp":"CIN","ha":"at","src":"market"},"5":{"p":0.4558,"opp":"PHI","ha":"vs","src":"market"},"6":{"p":0.5442,"opp":"HOU","ha":"vs","src":"market"},"8":{"p":0.6475,"opp":"IND","ha":"vs","src":"model"},"9":{"p":0.3931,"opp":"BAL","ha":"at","src":"model"},"10":{"p":0.6875,"opp":"TEN","ha":"at","src":"model"},"11":{"p":0.5725,"opp":"NYG","ha":"at","src":"model"},"12":{"p":0.809,"opp":"TEN","ha":"vs","src":"model"},"13":{"p":0.49,"opp":"CHI","ha":"at","src":"model"},"14":{"p":0.6625,"opp":"PIT","ha":"vs","src":"model"},"15":{"p":0.392,"opp":"HOU","ha":"at","src":"model"},"16":{"p":0.5531,"opp":"DAL","ha":"at","src":"model"},"17":{"p":0.7151,"opp":"WAS","ha":"vs","src":"model"},"18":{"p":0.4974,"opp":"IND","ha":"at","src":"model"}},"CLE":{"1":{"p":0.2893,"opp":"JAX","ha":"at","src":"market"},"2":{"p":0.3419,"opp":"TB","ha":"at","src":"market"},"3":{"p":0.4558,"opp":"CAR","ha":"vs","src":"market"},"4":{"p":0.4265,"opp":"PIT","ha":"vs","src":"market"},"5":{"p":0.4265,"opp":"NYJ","ha":"at","src":"market"},"6":{"p":0.3151,"opp":"BAL","ha":"vs","src":"market"},"7":{"p":0.4265,"opp":"TEN","ha":"at","src":"market"},"8":{"p":0.3257,"opp":"PIT","ha":"at","src":"model"},"9":{"p":0.3845,"opp":"NO","ha":"at","src":"model"},"10":{"p":0.354,"opp":"HOU","ha":"vs","src":"model"},"12":{"p":0.6548,"opp":"LV","ha":"vs","src":"model"},"13":{"p":0.4771,"opp":"CIN","ha":"vs","src":"model"},"14":{"p":0.5411,"opp":"ATL","ha":"vs","src":"model"},"15":{"p":0.3809,"opp":"NYG","ha":"at","src":"model"},"16":{"p":0.2245,"opp":"BAL","ha":"at","src":"model"},"17":{"p":0.4574,"opp":"IND","ha":"vs","src":"model"},"18":{"p":0.329,"opp":"CIN","ha":"at","src":"model"}},"PIT":{"1":{"p":0.5879,"opp":"ATL","ha":"vs","src":"market"},"2":{"p":0.3694,"opp":"NE","ha":"at","src":"market"},"3":{"p":0.4558,"opp":"CIN","ha":"vs","src":"market"},"4":{"p":0.5735,"opp":"CLE","ha":"at","src":"market"},"5":{"p":0.5735,"opp":"IND","ha":"vs","src":"market"},"6":{"p":0.4558,"opp":"TB","ha":"at","src":"market"},"7":{"p":0.5735,"opp":"NO","ha":"at","src":"market"},"8":{"p":0.6743,"opp":"CLE","ha":"vs","src":"model"},"10":{"p":0.4272,"opp":"CIN","ha":"at","src":"model"},"11":{"p":0.3104,"opp":"PHI","ha":"at","src":"model"},"12":{"p":0.4558,"opp":"DEN","ha":"vs","src":"market"},"13":{"p":0.454,"opp":"HOU","ha":"vs","src":"model"},"14":{"p":0.3375,"opp":"JAX","ha":"at","src":"model"},"15":{"p":0.4551,"opp":"BAL","ha":"vs","src":"model"},"16":{"p":0.6938,"opp":"CAR","ha":"vs","src":"model"},"17":{"p":0.6035,"opp":"TEN","ha":"at","src":"model"},"18":{"p":0.3093,"opp":"BAL","ha":"at","src":"model"}},"ATL":{"1":{"p":0.4121,"opp":"PIT","ha":"at","src":"market"},"2":{"p":0.5442,"opp":"CAR","ha":"vs","src":"market"},"3":{"p":0.2893,"opp":"GB","ha":"at","src":"market"},"4":{"p":0.4265,"opp":"NO","ha":"at","src":"market"},"5":{"p":0.3694,"opp":"BAL","ha":"vs","src":"market"},"6":{"p":0.4121,"opp":"CHI","ha":"vs","src":"market"},"7":{"p":0.4636,"opp":"SF","ha":"vs","src":"model"},"8":{"p":0.3228,"opp":"TB","ha":"at","src":"model"},"9":{"p":0.3694,"opp":"CIN","ha":"vs","src":"market"},"10":{"p":0.4329,"opp":"KC","ha":"vs","src":"model"},"12":{"p":0.3037,"opp":"MIN","ha":"at","src":"model"},"13":{"p":0.366,"opp":"DET","ha":"vs","src":"model"},"14":{"p":0.4589,"opp":"CLE","ha":"at","src":"model"},"15":{"p":0.4156,"opp":"WAS","ha":"at","src":"model"},"16":{"p":0.4702,"opp":"TB","ha":"vs","src":"model"},"17":{"p":0.5717,"opp":"NO","ha":"vs","src":"model"},"18":{"p":0.4808,"opp":"CAR","ha":"at","src":"model"}},"TEN":{"1":{"p":0.5879,"opp":"NYJ","ha":"vs","src":"market"},"2":{"p":0.3694,"opp":"PHI","ha":"vs","src":"market"},"3":{"p":0.4121,"opp":"NYG","ha":"at","src":"market"},"4":{"p":0.2645,"opp":"BAL","ha":"at","src":"market"},"5":{"p":0.3977,"opp":"HOU","ha":"vs","src":"market"},"6":{"p":0.3977,"opp":"IND","ha":"at","src":"market"},"7":{"p":0.5735,"opp":"CLE","ha":"vs","src":"market"},"8":{"p":0.2616,"opp":"CIN","ha":"at","src":"model"},"10":{"p":0.3125,"opp":"JAX","ha":"vs","src":"model"},"11":{"p":0.2918,"opp":"DAL","ha":"at","src":"model"},"12":{"p":0.191,"opp":"JAX","ha":"at","src":"model"},"13":{"p":0.4549,"opp":"WAS","ha":"vs","src":"model"},"14":{"p":0.1556,"opp":"DET","ha":"at","src":"model"},"15":{"p":0.381,"opp":"IND","ha":"vs","src":"model"},"16":{"p":0.4275,"opp":"LV","ha":"at","src":"model"},"17":{"p":0.3965,"opp":"PIT","ha":"vs","src":"model"},"18":{"p":0.1696,"opp":"HOU","ha":"at","src":"model"}},"NYJ":{"1":{"p":0.4121,"opp":"TEN","ha":"at","src":"market"},"2":{"p":0.3419,"opp":"GB","ha":"vs","src":"market"},"3":{"p":0.2408,"opp":"DET","ha":"at","src":"market"},"4":{"p":0.2645,"opp":"CHI","ha":"at","src":"market"},"5":{"p":0.5735,"opp":"CLE","ha":"vs","src":"market"},"6":{"p":0.2408,"opp":"NE","ha":"at","src":"market"},"7":{"p":0.5735,"opp":"MIA","ha":"vs","src":"market"},"8":{"p":0.5657,"opp":"LV","ha":"vs","src":"model"},"9":{"p":0.1904,"opp":"KC","ha":"at","src":"model"},"10":{"p":0.2305,"opp":"BUF","ha":"vs","src":"model"},"11":{"p":0.2258,"opp":"LAC","ha":"at","src":"model"},"12":{"p":0.2922,"opp":"MIA","ha":"at","src":"model"},"14":{"p":0.2881,"opp":"DEN","ha":"vs","src":"model"},"15":{"p":0.3296,"opp":"ARI","ha":"at","src":"model"},"16":{"p":0.2924,"opp":"NE","ha":"vs","src":"model"},"17":{"p":0.3261,"opp":"MIN","ha":"vs","src":"model"},"18":{"p":0.1309,"opp":"BUF","ha":"at","src":"model"}},"LAC":{"1":{"p":0.7816,"opp":"ARI","ha":"vs","src":"market"},"2":{"p":0.7355,"opp":"LV","ha":"vs","src":"market"},"3":{"p":0.4121,"opp":"BUF","ha":"at","src":"market"},"4":{"p":0.4121,"opp":"SEA","ha":"at","src":"market"},"5":{"p":0.5735,"opp":"DEN","ha":"vs","src":"market"},"6":{"p":0.4265,"opp":"KC","ha":"at","src":"market"},"8":{"p":0.2947,"opp":"LA","ha":"at","src":"model"},"9":{"p":0.4811,"opp":"HOU","ha":"vs","src":"model"},"10":{"p":0.3337,"opp":"BAL","ha":"at","src":"model"},"11":{"p":0.7742,"opp":"NYJ","ha":"vs","src":"model"},"12":{"p":0.5055,"opp":"NE","ha":"vs","src":"model"},"13":{"p":0.4122,"opp":"TB","ha":"at","src":"model"},"14":{"p":0.6332,"opp":"LV","ha":"at","src":"model"},"15":{"p":0.5583,"opp":"SF","ha":"vs","src":"model"},"16":{"p":0.5053,"opp":"MIA","ha":"at","src":"model"},"17":{"p":0.5275,"opp":"KC","ha":"vs","src":"model"},"18":{"p":0.3505,"opp":"DEN","ha":"at","src":"model"}},"ARI":{"1":{"p":0.2184,"opp":"LAC","ha":"at","src":"market"},"2":{"p":0.2294,"opp":"SEA","ha":"vs","src":"market"},"3":{"p":0.1971,"opp":"SF","ha":"at","src":"market"},"4":{"p":0.302,"opp":"NYG","ha":"at","src":"market"},"5":{"p":0.2645,"opp":"DET","ha":"vs","src":"market"},"6":{"p":0.1587,"opp":"LA","ha":"at","src":"market"},"7":{"p":0.378,"opp":"DEN","ha":"vs","src":"model"},"8":{"p":0.3681,"opp":"DAL","ha":"at","src":"model"},"9":{"p":0.1601,"opp":"SEA","ha":"at","src":"model"},"10":{"p":0.3204,"opp":"LA","ha":"vs","src":"model"},"11":{"p":0.265,"opp":"KC","ha":"at","src":"model"},"12":{"p":0.539,"opp":"WAS","ha":"vs","src":"model"},"13":{"p":0.3619,"opp":"PHI","ha":"vs","src":"model"},"15":{"p":0.6704,"opp":"NYJ","ha":"vs","src":"model"},"16":{"p":0.3904,"opp":"NO","ha":"at","src":"model"},"17":{"p":0.6605,"opp":"LV","ha":"vs","src":"model"},"18":{"p":0.4344,"opp":"SF","ha":"vs","src":"model"}},"LV":{"1":{"p":0.6023,"opp":"MIA","ha":"vs","src":"market"},"2":{"p":0.2645,"opp":"LAC","ha":"at","src":"market"},"3":{"p":0.3977,"opp":"NO","ha":"at","src":"market"},"4":{"p":0.3419,"opp":"KC","ha":"vs","src":"market"},"5":{"p":0.2645,"opp":"NE","ha":"at","src":"market"},"6":{"p":0.3151,"opp":"BUF","ha":"vs","src":"market"},"7":{"p":0.2458,"opp":"LA","ha":"vs","src":"model"},"8":{"p":0.4343,"opp":"NYJ","ha":"at","src":"model"},"9":{"p":0.2202,"opp":"SF","ha":"at","src":"model"},"10":{"p":0.2033,"opp":"SEA","ha":"vs","src":"model"},"11":{"p":0.1796,"opp":"DEN","ha":"at","src":"model"},"12":{"p":0.3452,"opp":"CLE","ha":"at","src":"model"},"14":{"p":0.3668,"opp":"LAC","ha":"vs","src":"model"},"15":{"p":0.2974,"opp":"DEN","ha":"vs","src":"model"},"16":{"p":0.5725,"opp":"TEN","ha":"vs","src":"model"},"17":{"p":0.3395,"opp":"ARI","ha":"at","src":"model"},"18":{"p":0.1978,"opp":"KC","ha":"at","src":"model"}},"MIA":{"1":{"p":0.3977,"opp":"LV","ha":"at","src":"market"},"2":{"p":0.2184,"opp":"SF","ha":"at","src":"market"},"3":{"p":0.2893,"opp":"KC","ha":"vs","src":"market"},"4":{"p":0.2893,"opp":"MIN","ha":"at","src":"market"},"5":{"p":0.3284,"opp":"CIN","ha":"vs","src":"market"},"7":{"p":0.4265,"opp":"NYJ","ha":"at","src":"market"},"8":{"p":0.4238,"opp":"NE","ha":"vs","src":"model"},"9":{"p":0.3781,"opp":"DET","ha":"vs","src":"model"},"10":{"p":0.3554,"opp":"IND","ha":"at","src":"model"},"11":{"p":0.2213,"opp":"BUF","ha":"at","src":"model"},"12":{"p":0.7078,"opp":"NYJ","ha":"vs","src":"model"},"13":{"p":0.2776,"opp":"DEN","ha":"at","src":"model"},"14":{"p":0.4983,"opp":"CHI","ha":"vs","src":"model"},"15":{"p":0.2919,"opp":"GB","ha":"at","src":"model"},"16":{"p":0.4947,"opp":"LAC","ha":"vs","src":"model"},"17":{"p":0.3509,"opp":"BUF","ha":"vs","src":"model"},"18":{"p":0.2818,"opp":"NE","ha":"at","src":"model"}},"MIN":{"1":{"p":0.5442,"opp":"GB","ha":"vs","src":"market"},"2":{"p":0.3977,"opp":"CHI","ha":"at","src":"market"},"3":{"p":0.4558,"opp":"TB","ha":"at","src":"market"},"4":{"p":0.7107,"opp":"MIA","ha":"vs","src":"market"},"5":{"p":0.5442,"opp":"NO","ha":"at","src":"market"},"7":{"p":0.5735,"opp":"IND","ha":"vs","src":"market"},"8":{"p":0.3422,"opp":"DET","ha":"at","src":"model"},"9":{"p":0.4627,"opp":"BUF","ha":"vs","src":"model"},"10":{"p":0.3979,"opp":"GB","ha":"at","src":"model"},"11":{"p":0.3694,"opp":"SF","ha":"at","src":"market"},"12":{"p":0.6963,"opp":"ATL","ha":"vs","src":"model"},"13":{"p":0.7448,"opp":"CAR","ha":"vs","src":"model"},"14":{"p":0.3866,"opp":"NE","ha":"at","src":"model"},"15":{"p":0.4915,"opp":"DET","ha":"vs","src":"model"},"16":{"p":0.689,"opp":"WAS","ha":"vs","src":"model"},"17":{"p":0.6739,"opp":"NYJ","ha":"at","src":"model"},"18":{"p":0.6121,"opp":"CHI","ha":"vs","src":"model"}},"GB":{"1":{"p":0.4558,"opp":"MIN","ha":"at","src":"market"},"2":{"p":0.6581,"opp":"NYJ","ha":"at","src":"market"},"3":{"p":0.7107,"opp":"ATL","ha":"vs","src":"market"},"4":{"p":0.5442,"opp":"TB","ha":"at","src":"market"},"5":{"p":0.5879,"opp":"CHI","ha":"vs","src":"market"},"6":{"p":0.5879,"opp":"DAL","ha":"vs","src":"market"},"7":{"p":0.3669,"opp":"DET","ha":"at","src":"model"},"8":{"p":0.7656,"opp":"CAR","ha":"vs","src":"model"},"9":{"p":0.4122,"opp":"NE","ha":"at","src":"model"},"10":{"p":0.6021,"opp":"MIN","ha":"vs","src":"model"},"12":{"p":0.3419,"opp":"LA","ha":"at","src":"market"},"13":{"p":0.5726,"opp":"NO","ha":"at","src":"model"},"14":{"p":0.4891,"opp":"BUF","ha":"vs","src":"model"},"15":{"p":0.7081,"opp":"MIA","ha":"vs","src":"model"},"16":{"p":0.4558,"opp":"CHI","ha":"at","src":"market"},"17":{"p":0.5406,"opp":"HOU","ha":"vs","src":"model"},"18":{"p":0.5179,"opp":"DET","ha":"vs","src":"model"}},"PHI":{"1":{"p":0.6306,"opp":"WAS","ha":"vs","src":"market"},"2":{"p":0.6306,"opp":"TEN","ha":"at","src":"market"},"3":{"p":0.4558,"opp":"CHI","ha":"at","src":"market"},"4":{"p":0.4558,"opp":"LA","ha":"vs","src":"market"},"5":{"p":0.5442,"opp":"JAX","ha":"at","src":"market"},"6":{"p":0.6849,"opp":"CAR","ha":"vs","src":"market"},"7":{"p":0.7238,"opp":"DAL","ha":"vs","src":"model"},"8":{"p":0.6021,"opp":"WAS","ha":"at","src":"model"},"9":{"p":0.74,"opp":"NYG","ha":"vs","src":"model"},"11":{"p":0.6896,"opp":"PIT","ha":"vs","src":"model"},"12":{"p":0.4558,"opp":"DAL","ha":"at","src":"market"},"13":{"p":0.6381,"opp":"ARI","ha":"at","src":"model"},"14":{"p":0.6752,"opp":"IND","ha":"vs","src":"model"},"15":{"p":0.4749,"opp":"SEA","ha":"vs","src":"model"},"16":{"p":0.5735,"opp":"HOU","ha":"vs","src":"market"},"17":{"p":0.4982,"opp":"SF","ha":"at","src":"model"},"18":{"p":0.6019,"opp":"NYG","ha":"at","src":"model"}},"WAS":{"1":{"p":0.3694,"opp":"PHI","ha":"at","src":"market"},"2":{"p":0.3694,"opp":"DAL","ha":"at","src":"market"},"3":{"p":0.3977,"opp":"SEA","ha":"vs","src":"market"},"4":{"p":0.5442,"opp":"IND","ha":"vs","src":"market"},"5":{"p":0.5442,"opp":"NYG","ha":"vs","src":"market"},"6":{"p":0.3419,"opp":"SF","ha":"at","src":"market"},"8":{"p":0.3979,"opp":"PHI","ha":"vs","src":"model"},"9":{"p":0.355,"opp":"LA","ha":"vs","src":"model"},"10":{"p":0.4235,"opp":"NYG","ha":"at","src":"model"},"11":{"p":0.5209,"opp":"CIN","ha":"vs","src":"model"},"12":{"p":0.461,"opp":"ARI","ha":"at","src":"model"},"13":{"p":0.5451,"opp":"TEN","ha":"at","src":"model"},"14":{"p":0.3956,"opp":"HOU","ha":"vs","src":"model"},"15":{"p":0.5844,"opp":"ATL","ha":"vs","src":"model"},"16":{"p":0.311,"opp":"MIN","ha":"at","src":"model"},"17":{"p":0.2849,"opp":"JAX","ha":"at","src":"model"},"18":{"p":0.5568,"opp":"DAL","ha":"vs","src":"model"}},"NYG":{"1":{"p":0.4265,"opp":"DAL","ha":"vs","src":"market"},"2":{"p":0.2645,"opp":"LA","ha":"at","src":"market"},"3":{"p":0.5879,"opp":"TEN","ha":"vs","src":"market"},"4":{"p":0.698,"opp":"ARI","ha":"vs","src":"market"},"5":{"p":0.4558,"opp":"WAS","ha":"at","src":"market"},"6":{"p":0.5735,"opp":"NO","ha":"vs","src":"market"},"7":{"p":0.3419,"opp":"HOU","ha":"at","src":"market"},"9":{"p":0.26,"opp":"PHI","ha":"at","src":"model"},"10":{"p":0.5765,"opp":"WAS","ha":"vs","src":"model"},"11":{"p":0.4275,"opp":"JAX","ha":"vs","src":"model"},"12":{"p":0.3513,"opp":"IND","ha":"at","src":"model"},"13":{"p":0.472,"opp":"SF","ha":"vs","src":"model"},"14":{"p":0.1844,"opp":"SEA","ha":"at","src":"model"},"15":{"p":0.6191,"opp":"CLE","ha":"vs","src":"model"},"16":{"p":0.24,"opp":"DET","ha":"at","src":"model"},"17":{"p":0.4045,"opp":"DAL","ha":"at","src":"model"},"18":{"p":0.3981,"opp":"PHI","ha":"vs","src":"model"}},"DAL":{"1":{"p":0.5735,"opp":"NYG","ha":"at","src":"market"},"2":{"p":0.6306,"opp":"WAS","ha":"vs","src":"market"},"3":{"p":0.4265,"opp":"BAL","ha":"vs","src":"market"},"4":{"p":0.4265,"opp":"HOU","ha":"at","src":"market"},"5":{"p":0.6023,"opp":"TB","ha":"vs","src":"market"},"6":{"p":0.4121,"opp":"GB","ha":"at","src":"market"},"7":{"p":0.2762,"opp":"PHI","ha":"at","src":"model"},"8":{"p":0.6319,"opp":"ARI","ha":"vs","src":"model"},"9":{"p":0.3697,"opp":"IND","ha":"at","src":"model"},"10":{"p":0.4916,"opp":"SF","ha":"vs","src":"model"},"11":{"p":0.7082,"opp":"TEN","ha":"vs","src":"model"},"12":{"p":0.5442,"opp":"PHI","ha":"vs","src":"market"},"13":{"p":0.1978,"opp":"SEA","ha":"at","src":"model"},"15":{"p":0.2396,"opp":"LA","ha":"at","src":"model"},"16":{"p":0.4469,"opp":"JAX","ha":"vs","src":"model"},"17":{"p":0.5955,"opp":"NYG","ha":"vs","src":"model"},"18":{"p":0.4432,"opp":"WAS","ha":"at","src":"model"}},"KC":{"1":{"p":0.5879,"opp":"DEN","ha":"vs","src":"market"},"2":{"p":0.6849,"opp":"IND","ha":"vs","src":"market"},"3":{"p":0.7107,"opp":"MIA","ha":"at","src":"market"},"4":{"p":0.6581,"opp":"LV","ha":"at","src":"market"},"6":{"p":0.5735,"opp":"LAC","ha":"vs","src":"market"},"7":{"p":0.2883,"opp":"SEA","ha":"at","src":"model"},"8":{"p":0.3973,"opp":"DEN","ha":"at","src":"model"},"9":{"p":0.8096,"opp":"NYJ","ha":"vs","src":"model"},"10":{"p":0.5671,"opp":"ATL","ha":"at","src":"model"},"11":{"p":0.735,"opp":"ARI","ha":"vs","src":"model"},"12":{"p":0.4265,"opp":"BUF","ha":"at","src":"market"},"13":{"p":0.3386,"opp":"LA","ha":"at","src":"model"},"14":{"p":0.5033,"opp":"CIN","ha":"at","src":"model"},"15":{"p":0.5547,"opp":"NE","ha":"vs","src":"model"},"16":{"p":0.6065,"opp":"SF","ha":"vs","src":"model"},"17":{"p":0.4725,"opp":"LAC","ha":"at","src":"model"},"18":{"p":0.8022,"opp":"LV","ha":"vs","src":"model"}},"DEN":{"1":{"p":0.4121,"opp":"KC","ha":"at","src":"market"},"2":{"p":0.5735,"opp":"JAX","ha":"vs","src":"market"},"3":{"p":0.4121,"opp":"LA","ha":"vs","src":"market"},"4":{"p":0.4265,"opp":"SF","ha":"at","src":"market"},"5":{"p":0.4265,"opp":"LAC","ha":"at","src":"market"},"6":{"p":0.4265,"opp":"SEA","ha":"vs","src":"market"},"7":{"p":0.622,"opp":"ARI","ha":"at","src":"model"},"8":{"p":0.6027,"opp":"KC","ha":"vs","src":"model"},"9":{"p":0.6484,"opp":"CAR","ha":"at","src":"model"},"11":{"p":0.8204,"opp":"LV","ha":"vs","src":"model"},"12":{"p":0.5442,"opp":"PIT","ha":"at","src":"market"},"13":{"p":0.7224,"opp":"MIA","ha":"vs","src":"model"},"14":{"p":0.7119,"opp":"NYJ","ha":"at","src":"model"},"15":{"p":0.7026,"opp":"LV","ha":"at","src":"model"},"16":{"p":0.4558,"opp":"BUF","ha":"vs","src":"market"},"17":{"p":0.4285,"opp":"NE","ha":"at","src":"model"},"18":{"p":0.6495,"opp":"LAC","ha":"vs","src":"model"}}}},"dfs":{"players":[{"id":868199,"name":"Josh Allen","pos":"QB","team":"BUF","salary":7000,"proj":24.63,"games":32,"implied":23.0,"opp":"HOU"},{"id":1214154,"name":"Jahmyr Gibbs","pos":"RB","team":"DET","salary":8000,"proj":23.56,"games":29,"implied":27.8,"opp":"NO"},{"id":1109979,"name":"Ja'Marr Chase","pos":"WR","team":"CIN","salary":7800,"proj":23.01,"games":31,"implied":27.5,"opp":"TB"},{"id":1228244,"name":"Bijan Robinson","pos":"RB","team":"ATL","salary":7700,"proj":22.88,"games":29,"implied":19.2,"opp":"PIT"},{"id":1127106,"name":"Amon-Ra St. Brown","pos":"WR","team":"DET","salary":7500,"proj":21.92,"games":32,"implied":27.8,"opp":"NO"},{"id":727837,"name":"Jared Goff","pos":"QB","team":"DET","salary":6000,"proj":21.44,"games":33,"implied":27.8,"opp":"NO"},{"id":1065406,"name":"Jonathan Taylor","pos":"RB","team":"IND","salary":7300,"proj":21.19,"games":29,"implied":22.5,"opp":"BAL"},{"id":1110711,"name":"Trevor Lawrence","pos":"QB","team":"JAX","salary":5800,"proj":21.17,"games":29,"implied":24.0,"opp":"CLE"},{"id":878785,"name":"Joe Burrow","pos":"QB","team":"CIN","salary":6900,"proj":20.83,"games":22,"implied":27.5,"opp":"TB"},{"id":913271,"name":"Jalen Hurts","pos":"QB","team":"PHI","salary":6600,"proj":20.79,"games":31,"implied":26.0,"opp":"WAS"},{"id":1231820,"name":"De'Von Achane","pos":"RB","team":"MIA","salary":7000,"proj":20.31,"games":27,"implied":18.5,"opp":"LV"},{"id":910562,"name":"Justin Herbert","pos":"QB","team":"LAC","salary":6100,"proj":19.77,"games":31,"implied":28.5,"opp":"ARI"},{"id":732145,"name":"Derrick Henry","pos":"RB","team":"BAL","salary":6700,"proj":19.56,"games":32,"implied":26.0,"opp":"IND"},{"id":1286445,"name":"Caleb Williams","pos":"QB","team":"CHI","salary":6300,"proj":19.32,"games":25,"implied":25.0,"opp":"CAR"},{"id":877745,"name":"Lamar Jackson","pos":"QB","team":"BAL","salary":6800,"proj":19.05,"games":28,"implied":26.0,"opp":"IND"},{"id":1108161,"name":"Trey McBride","pos":"TE","team":"ARI","salary":6800,"proj":18.84,"games":30,"implied":18.0,"opp":"LAC"},{"id":1131012,"name":"James Cook III","pos":"RB","team":"BUF","salary":7200,"proj":18.76,"games":31,"implied":23.0,"opp":"HOU"},{"id":748070,"name":"Baker Mayfield","pos":"QB","team":"TB","salary":5900,"proj":18.66,"games":32,"implied":24.0,"opp":"CIN"},{"id":1161228,"name":"Jayden Daniels","pos":"QB","team":"WAS","salary":6500,"proj":18.55,"games":15,"implied":21.5,"opp":"PHI"},{"id":1123379,"name":"Chase Brown","pos":"RB","team":"CIN","salary":7100,"proj":18.28,"games":28,"implied":27.5,"opp":"TB"},{"id":879799,"name":"Kyler Murray","pos":"QB","team":"MIN","salary":5500,"proj":17.94,"games":18,"implied":23.5,"opp":"GB"},{"id":607047,"name":"Jacoby Brissett","pos":"QB","team":"ARI","salary":5100,"proj":17.33,"games":20,"implied":18.0,"opp":"LAC"},{"id":1122592,"name":"Chris Olave","pos":"WR","team":"NO","salary":6700,"proj":17.26,"games":25,"implied":20.8,"opp":"DET"},{"id":879981,"name":"Daniel Jones","pos":"QB","team":"IND","salary":5400,"proj":17.21,"games":22,"implied":22.5,"opp":"BAL"},{"id":883302,"name":"Saquon Barkley","pos":"RB","team":"PHI","salary":6900,"proj":17.06,"games":30,"implied":26.0,"opp":"WAS"},{"id":1110306,"name":"Tyler Shough","pos":"QB","team":"NO","salary":5600,"proj":16.98,"games":11,"implied":20.8,"opp":"DET"},{"id":1178741,"name":"Drake London","pos":"WR","team":"ATL","salary":6500,"proj":16.89,"games":26,"implied":19.2,"opp":"PIT"},{"id":912137,"name":"Jordan Love","pos":"QB","team":"GB","salary":5700,"proj":16.7,"games":27,"implied":22.0,"opp":"MIN"},{"id":1074698,"name":"Nico Collins","pos":"WR","team":"HOU","salary":7000,"proj":16.35,"games":26,"implied":21.5,"opp":"BUF"},{"id":978579,"name":"Tee Higgins","pos":"WR","team":"CIN","salary":6300,"proj":15.94,"games":27,"implied":27.5,"opp":"TB"},{"id":213957,"name":"Aaron Rodgers","pos":"QB","team":"PIT","salary":5300,"proj":15.87,"games":28,"implied":22.2,"opp":"ATL"},{"id":1214084,"name":"C.J. Stroud","pos":"QB","team":"HOU","salary":5200,"proj":15.84,"games":26,"implied":21.5,"opp":"BUF"},{"id":1213257,"name":"Bryce Young","pos":"QB","team":"CAR","salary":5200,"proj":15.72,"games":27,"implied":22.5,"opp":"CHI"},{"id":1175184,"name":"Jameson Williams","pos":"WR","team":"DET","salary":6000,"proj":15.31,"games":28,"implied":27.8,"opp":"NO"},{"id":1398572,"name":"Omarion Hampton","pos":"RB","team":"LAC","salary":6800,"proj":15.3,"games":9,"implied":28.5,"opp":"ARI"},{"id":613866,"name":"Carson Wentz","pos":"QB","team":"MIN","salary":4000,"proj":15.22,"games":8,"implied":23.5,"opp":"GB"},{"id":1379646,"name":"Ashton Jeanty","pos":"RB","team":"LV","salary":6600,"proj":14.91,"games":17,"implied":22.0,"opp":"MIA"},{"id":1177053,"name":"Zay Flowers","pos":"WR","team":"BAL","salary":6400,"proj":14.87,"games":29,"implied":26.0,"opp":"IND"},{"id":1287923,"name":"Bucky Irving","pos":"RB","team":"TB","salary":5700,"proj":14.83,"games":18,"implied":24.0,"opp":"CIN"},{"id":944416,"name":"Josh Jacobs","pos":"RB","team":"GB","salary":6300,"proj":14.81,"games":30,"implied":22.0,"opp":"MIN"},{"id":1123529,"name":"Michael Wilson","pos":"WR","team":"ARI","salary":5300,"proj":14.5,"games":28,"implied":18.0,"opp":"LAC"},{"id":1287599,"name":"J.J. McCarthy","pos":"QB","team":"MIN","salary":4500,"proj":14.5,"games":10,"implied":23.5,"opp":"GB"},{"id":1285917,"name":"Brock Bowers","pos":"TE","team":"LV","salary":6900,"proj":14.42,"games":20,"implied":22.0,"opp":"MIA"},{"id":1164875,"name":"Wan'Dale Robinson","pos":"WR","team":"TEN","salary":4800,"proj":14.32,"games":29,"implied":20.8,"opp":"NYJ"},{"id":1069535,"name":"Justin Jefferson","pos":"WR","team":"MIN","salary":7300,"proj":14.31,"games":31,"implied":23.5,"opp":"GB"},{"id":978577,"name":"Travis Etienne Jr.","pos":"RB","team":"NO","salary":5900,"proj":14.24,"games":30,"implied":20.8,"opp":"DET"},{"id":607843,"name":"Marcus Mariota","pos":"QB","team":"WAS","salary":4500,"proj":13.98,"games":14,"implied":21.5,"opp":"PHI"},{"id":1107478,"name":"Michael Penix Jr.","pos":"QB","team":"ATL","salary":4800,"proj":13.94,"games":11,"implied":19.2,"opp":"PIT"},{"id":1069808,"name":"D'Andre Swift","pos":"RB","team":"CHI","salary":6100,"proj":13.8,"games":31,"implied":25.0,"opp":"CAR"},{"id":1162537,"name":"Breece Hall","pos":"RB","team":"NYJ","salary":6200,"proj":13.76,"games":29,"implied":17.8,"opp":"TEN"},{"id":973947,"name":"Tua Tagovailoa","pos":"QB","team":"ATL","salary":4800,"proj":13.72,"games":26,"implied":19.2,"opp":"PIT"},{"id":513856,"name":"Geno Smith","pos":"QB","team":"NYJ","salary":4600,"proj":13.64,"games":29,"implied":17.8,"opp":"TEN"},{"id":945633,"name":"DK Metcalf","pos":"WR","team":"PIT","salary":5400,"proj":13.47,"games":30,"implied":22.2,"opp":"ATL"},{"id":1060262,"name":"DeVonta Smith","pos":"WR","team":"PHI","salary":6600,"proj":13.42,"games":30,"implied":26.0,"opp":"WAS"},{"id":403308,"name":"Kirk Cousins","pos":"QB","team":"LV","salary":5000,"proj":13.34,"games":22,"implied":22.0,"opp":"MIA"},{"id":694041,"name":"Stefon Diggs","pos":"WR","team":"WAS","salary":5200,"proj":13.24,"games":29,"implied":21.5,"opp":"PHI"},{"id":216342,"name":"Joe Flacco","pos":"QB","team":"CIN","salary":4400,"proj":13.16,"games":18,"implied":27.5,"opp":"TB"},{"id":1176443,"name":"Jaylen Warren","pos":"RB","team":"PIT","salary":5400,"proj":13.15,"games":29,"implied":22.2,"opp":"ATL"},{"id":933480,"name":"Rico Dowdle","pos":"RB","team":"PIT","salary":5200,"proj":13.12,"games":29,"implied":22.2,"opp":"ATL"},{"id":742390,"name":"James Conner","pos":"RB","team":"ARI","salary":4200,"proj":13.08,"games":17,"implied":18.0,"opp":"LAC"},{"id":1213865,"name":"Quentin Johnston","pos":"WR","team":"LAC","salary":4700,"proj":12.98,"games":24,"implied":28.5,"opp":"ARI"},{"id":1164889,"name":"Garrett Wilson","pos":"WR","team":"NYJ","salary":5800,"proj":12.94,"games":21,"implied":17.8,"opp":"TEN"},{"id":1272321,"name":"Shedeur Sanders","pos":"QB","team":"CLE","salary":4700,"proj":12.8,"games":8,"implied":16.5,"opp":"JAX"},{"id":1107027,"name":"Alec Pierce","pos":"WR","team":"IND","salary":5700,"proj":12.79,"games":29,"implied":22.5,"opp":"BAL"},{"id":836116,"name":"Terry McLaurin","pos":"WR","team":"WAS","salary":5700,"proj":12.62,"games":26,"implied":21.5,"opp":"PHI"},{"id":1130705,"name":"Kenny Gainwell","pos":"RB","team":"TB","salary":5200,"proj":12.56,"games":32,"implied":24.0,"opp":"CIN"},{"id":880151,"name":"Jakobi Meyers","pos":"WR","team":"JAX","salary":5000,"proj":12.5,"games":30,"implied":24.0,"opp":"CLE"},{"id":1380576,"name":"Tetairoa McMillan","pos":"WR","team":"CAR","salary":6100,"proj":12.47,"games":17,"implied":22.5,"opp":"CHI"},{"id":1218643,"name":"Ladd McConkey","pos":"WR","team":"LAC","salary":5900,"proj":12.47,"games":24,"implied":28.5,"opp":"ARI"},{"id":1181874,"name":"Tucker Kraft","pos":"TE","team":"GB","salary":4500,"proj":12.44,"games":20,"implied":22.0,"opp":"MIN"},{"id":791365,"name":"Dallas Goedert","pos":"TE","team":"PHI","salary":4100,"proj":12.31,"games":26,"implied":26.0,"opp":"WAS"},{"id":1123026,"name":"Kyle Pitts Sr.","pos":"TE","team":"ATL","salary":4700,"proj":12.22,"games":32,"implied":19.2,"opp":"PIT"},{"id":867009,"name":"Jauan Jennings","pos":"WR","team":"MIN","salary":4300,"proj":12.21,"games":28,"implied":23.5,"opp":"GB"},{"id":1228691,"name":"Cam Ward","pos":"QB","team":"TEN","salary":5100,"proj":12.18,"games":17,"implied":20.8,"opp":"NYJ"},{"id":1229074,"name":"Parker Washington","pos":"WR","team":"JAX","salary":5600,"proj":12.11,"games":25,"implied":24.0,"opp":"CLE"},{"id":865844,"name":"Jake Browning","pos":"QB","team":"TB","salary":4000,"proj":12.06,"games":8,"implied":24.0,"opp":"CIN"},{"id":1168926,"name":"Sam LaPorta","pos":"TE","team":"DET","salary":4400,"proj":12.04,"games":21,"implied":27.8,"opp":"NO"},{"id":1067918,"name":"Christian Watson","pos":"WR","team":"GB","salary":5900,"proj":11.94,"games":21,"implied":22.0,"opp":"MIN"},{"id":880398,"name":"Tony Pollard","pos":"RB","team":"TEN","salary":5600,"proj":11.88,"games":32,"implied":20.8,"opp":"NYJ"},{"id":828743,"name":"Deshaun Watson","pos":"QB","team":"CLE","salary":4700,"proj":11.82,"games":6,"implied":16.5,"opp":"JAX"},{"id":741314,"name":"Aaron Jones Sr.","pos":"RB","team":"MIN","salary":5300,"proj":11.67,"games":27,"implied":23.5,"opp":"GB"},{"id":1378821,"name":"Colston Loveland","pos":"TE","team":"CHI","salary":5300,"proj":11.67,"games":16,"implied":25.0,"opp":"CAR"},{"id":1215022,"name":"Anthony Richardson Sr.","pos":"QB","team":"IND","salary":4900,"proj":11.64,"games":8,"implied":22.5,"opp":"BAL"},{"id":1286064,"name":"Brian Thomas Jr.","pos":"WR","team":"JAX","salary":5500,"proj":11.63,"games":22,"implied":24.0,"opp":"CLE"},{"id":911348,"name":"Michael Pittman Jr.","pos":"WR","team":"PIT","salary":4900,"proj":11.63,"games":32,"implied":22.2,"opp":"ATL"},{"id":976323,"name":"Malik Willis","pos":"QB","team":"MIA","salary":5300,"proj":11.53,"games":8,"implied":18.5,"opp":"LV"},{"id":399579,"name":"Tyrod Taylor","pos":"QB","team":"GB","salary":4000,"proj":11.52,"games":10,"implied":22.0,"opp":"MIN"},{"id":557210,"name":"Keenan Allen","pos":"WR","team":"IND","salary":4700,"proj":11.5,"games":30,"implied":22.5,"opp":"BAL"},{"id":1213727,"name":"Rome Odunze","pos":"WR","team":"CHI","salary":5400,"proj":11.42,"games":20,"implied":25.0,"opp":"CAR"},{"id":1174752,"name":"Spencer Rattler","pos":"QB","team":"NO","salary":4000,"proj":11.4,"games":12,"implied":20.8,"opp":"DET"},{"id":1394752,"name":"Harold Fannin Jr.","pos":"TE","team":"CLE","salary":4200,"proj":11.37,"games":16,"implied":16.5,"opp":"JAX"},{"id":1116663,"name":"Will Levis","pos":"QB","team":"TEN","salary":4000,"proj":11.31,"games":8,"implied":20.8,"opp":"NYJ"},{"id":1383807,"name":"Quinshon Judkins","pos":"RB","team":"CLE","salary":5500,"proj":11.27,"games":14,"implied":16.5,"opp":"JAX"},{"id":1066811,"name":"Aidan O'Connell","pos":"QB","team":"LV","salary":4000,"proj":11.21,"games":8,"implied":22.0,"opp":"MIA"},{"id":835127,"name":"Chris Godwin Jr.","pos":"WR","team":"TB","salary":5200,"proj":11.19,"games":20,"implied":24.0,"opp":"CIN"},{"id":750846,"name":"Alvin Kamara","pos":"RB","team":"NO","salary":4900,"proj":11.0,"games":24,"implied":20.8,"opp":"DET"},{"id":1130603,"name":"Khalil Shakir","pos":"WR","team":"BUF","salary":4800,"proj":10.98,"games":28,"implied":23.0,"opp":"HOU"},{"id":1060311,"name":"Davis Mills","pos":"QB","team":"HOU","salary":4200,"proj":10.95,"games":11,"implied":21.5,"opp":"BUF"},{"id":1287825,"name":"Emeka Egbuka","pos":"WR","team":"TB","salary":6200,"proj":10.8,"games":17,"implied":24.0,"opp":"CIN"},{"id":831007,"name":"Easton Stick","pos":"QB","team":"TB","salary":4000,"proj":10.77,"games":1,"implied":24.0,"opp":"CIN"},{"id":1229083,"name":"Tyler Warren","pos":"TE","team":"IND","salary":4900,"proj":10.67,"games":17,"implied":22.5,"opp":"BAL"},{"id":1214250,"name":"Jordan Addison","pos":"WR","team":"MIN","salary":5800,"proj":10.66,"games":25,"implied":23.5,"opp":"GB"},{"id":877790,"name":"DJ Moore","pos":"WR","team":"BUF","salary":5600,"proj":10.64,"games":33,"implied":23.0,"opp":"HOU"},{"id":1333868,"name":"Quinn Ewers","pos":"QB","team":"JAX","salary":4000,"proj":10.57,"games":4,"implied":24.0,"opp":"CLE"},{"id":1287828,"name":"Marvin Harrison Jr.","pos":"WR","team":"ARI","salary":5000,"proj":10.34,"games":20,"implied":18.0,"opp":"LAC"},{"id":884609,"name":"Juwan Johnson","pos":"TE","team":"NO","salary":3700,"proj":10.32,"games":30,"implied":20.8,"opp":"DET"},{"id":913163,"name":"Tyler Huntley","pos":"QB","team":"BAL","salary":4300,"proj":10.25,"games":9,"implied":26.0,"opp":"IND"},{"id":830523,"name":"Dalton Schultz","pos":"TE","team":"HOU","salary":3400,"proj":10.18,"games":32,"implied":21.5,"opp":"BUF"},{"id":946739,"name":"David Montgomery","pos":"RB","team":"HOU","salary":6000,"proj":10.15,"games":31,"implied":21.5,"opp":"BUF"},{"id":1128222,"name":"Tank Dell","pos":"WR","team":"HOU","salary":3700,"proj":9.98,"games":9,"implied":21.5,"opp":"BUF"},{"id":1123398,"name":"Jayden Reed","pos":"WR","team":"GB","salary":4900,"proj":9.95,"games":17,"implied":22.0,"opp":"MIN"},{"id":1215077,"name":"Josh Downs","pos":"WR","team":"IND","salary":5200,"proj":9.9,"games":27,"implied":22.5,"opp":"BAL"},{"id":1377732,"name":"Luther Burden III","pos":"WR","team":"CHI","salary":5500,"proj":9.88,"games":15,"implied":25.0,"opp":"CAR"},{"id":1231652,"name":"Woody Marks","pos":"RB","team":"HOU","salary":5000,"proj":9.51,"games":16,"implied":21.5,"opp":"BUF"},{"id":1250886,"name":"Kyle Monangai","pos":"RB","team":"CHI","salary":5100,"proj":9.44,"games":17,"implied":25.0,"opp":"CAR"},{"id":1164979,"name":"Tre Tucker","pos":"WR","team":"LV","salary":4000,"proj":9.44,"games":28,"implied":22.0,"opp":"MIA"},{"id":1290165,"name":"Riley Leonard","pos":"QB","team":"IND","salary":4400,"proj":9.24,"games":5,"implied":22.5,"opp":"BAL"},{"id":1058090,"name":"Bailey Zappe","pos":"QB","team":"NYJ","salary":4000,"proj":9.16,"games":3,"implied":17.8,"opp":"TEN"},{"id":1213726,"name":"Jalen McMillan","pos":"WR","team":"TB","salary":4400,"proj":9.12,"games":10,"implied":24.0,"opp":"CIN"},{"id":1164940,"name":"Brenton Strange","pos":"TE","team":"JAX","salary":3600,"proj":9.11,"games":20,"implied":24.0,"opp":"CLE"},{"id":1214824,"name":"Kimani Vidal","pos":"RB","team":"LAC","salary":4800,"proj":9.08,"games":17,"implied":28.5,"opp":"ARI"},{"id":273278,"name":"Josh Johnson","pos":"QB","team":"CIN","salary":4000,"proj":9.03,"games":5,"implied":27.5,"opp":"TB"},{"id":1169430,"name":"Tyjae Spears","pos":"RB","team":"TEN","salary":5100,"proj":9.02,"games":23,"implied":20.8,"opp":"NYJ"},{"id":1135513,"name":"Dalton Kincaid","pos":"TE","team":"BUF","salary":4600,"proj":9.0,"games":22,"implied":23.0,"opp":"HOU"},{"id":1062047,"name":"Chuba Hubbard","pos":"RB","team":"CAR","salary":5500,"proj":8.99,"games":29,"implied":22.5,"opp":"CHI"},{"id":600191,"name":"Darren Waller","pos":"TE","team":"CAR","salary":3200,"proj":8.97,"games":14,"implied":22.5,"opp":"CHI"},{"id":1218753,"name":"Jalen Coker","pos":"WR","team":"CAR","salary":4600,"proj":8.82,"games":16,"implied":22.5,"opp":"CHI"},{"id":884013,"name":"Calvin Ridley","pos":"WR","team":"TEN","salary":4500,"proj":8.75,"games":20,"implied":20.8,"opp":"NYJ"},{"id":820699,"name":"Mark Andrews","pos":"TE","team":"BAL","salary":3900,"proj":8.75,"games":31,"implied":26.0,"opp":"IND"},{"id":832098,"name":"David Njoku","pos":"TE","team":"LAC","salary":3000,"proj":8.74,"games":23,"implied":28.5,"opp":"ARI"},{"id":1213386,"name":"Brady Cook","pos":"QB","team":"MIA","salary":4000,"proj":8.73,"games":5,"implied":18.5,"opp":"LV"},{"id":1049263,"name":"Cade Otton","pos":"TE","team":"TB","salary":3700,"proj":8.73,"games":28,"implied":24.0,"opp":"CIN"},{"id":1213362,"name":"Kayshon Boutte","pos":"WR","team":"HOU","salary":4500,"proj":8.65,"games":22,"implied":21.5,"opp":"BUF"},{"id":1325624,"name":"Oronde Gadsden II","pos":"TE","team":"LAC","salary":3500,"proj":8.55,"games":15,"implied":28.5,"opp":"ARI"},{"id":1116662,"name":"Pat Freiermuth","pos":"TE","team":"PIT","salary":3400,"proj":8.55,"games":29,"implied":22.2,"opp":"ATL"},{"id":1229343,"name":"Rachaad White","pos":"RB","team":"WAS","salary":5200,"proj":8.51,"games":30,"implied":21.5,"opp":"PHI"},{"id":1191186,"name":"Jacory Croskey-Merritt","pos":"RB","team":"WAS","salary":5300,"proj":8.5,"games":17,"implied":21.5,"opp":"PHI"},{"id":1322431,"name":"Keon Coleman","pos":"WR","team":"BUF","salary":4000,"proj":8.43,"games":18,"implied":23.0,"opp":"HOU"},{"id":973935,"name":"Jerry Jeudy","pos":"WR","team":"CLE","salary":4100,"proj":8.37,"games":32,"implied":16.5,"opp":"JAX"},{"id":322858,"name":"Andy Dalton","pos":"QB","team":"PHI","salary":4000,"proj":8.36,"games":10,"implied":26.0,"opp":"WAS"},{"id":1123521,"name":"Tanner McKee","pos":"QB","team":"PHI","salary":4000,"proj":8.33,"games":5,"implied":26.0,"opp":"WAS"},{"id":823220,"name":"Mason Rudolph","pos":"QB","team":"PIT","salary":4000,"proj":8.3,"games":10,"implied":22.2,"opp":"ATL"},{"id":1274492,"name":"Jayden Higgins","pos":"WR","team":"HOU","salary":4500,"proj":8.1,"games":17,"implied":21.5,"opp":"BUF"},{"id":1113403,"name":"Chris Rodriguez Jr.","pos":"RB","team":"JAX","salary":5100,"proj":8.07,"games":17,"implied":24.0,"opp":"CLE"},{"id":1321291,"name":"Audric Estime","pos":"RB","team":"NO","salary":4000,"proj":7.9,"games":11,"implied":20.8,"opp":"DET"},{"id":1164137,"name":"Jawhar Jordan","pos":"RB","team":"HOU","salary":4500,"proj":7.87,"games":4,"implied":21.5,"opp":"BUF"},{"id":1116001,"name":"Jordan Mason","pos":"RB","team":"MIN","salary":5400,"proj":7.85,"games":27,"implied":23.5,"opp":"GB"},{"id":923915,"name":"T.J. Hockenson","pos":"TE","team":"MIN","salary":3300,"proj":7.85,"games":27,"implied":23.5,"opp":"GB"},{"id":1164788,"name":"Devaughn Vele","pos":"WR","team":"NO","salary":3500,"proj":7.8,"games":15,"implied":20.8,"opp":"DET"},{"id":1106832,"name":"Isiah Pacheco","pos":"RB","team":"DET","salary":5000,"proj":7.78,"games":22,"implied":27.8,"opp":"NO"},{"id":976329,"name":"Michael Carter","pos":"RB","team":"TEN","salary":4000,"proj":7.75,"games":21,"implied":20.8,"opp":"NYJ"},{"id":1163866,"name":"Bam Knight","pos":"RB","team":"ARI","salary":4000,"proj":7.75,"games":13,"implied":18.0,"opp":"LAC"},{"id":1165333,"name":"Dillon Gabriel","pos":"QB","team":"CLE","salary":4000,"proj":7.74,"games":10,"implied":16.5,"opp":"JAX"},{"id":1106374,"name":"Chig Okonkwo","pos":"TE","team":"WAS","salary":4000,"proj":7.72,"games":31,"implied":21.5,"opp":"PHI"},{"id":1293066,"name":"Devin Neal","pos":"RB","team":"NO","salary":4400,"proj":7.61,"games":9,"implied":20.8,"opp":"DET"},{"id":728169,"name":"Mitchell Trubisky","pos":"QB","team":"TEN","salary":4000,"proj":7.55,"games":10,"implied":20.8,"opp":"NYJ"},{"id":338280,"name":"Case Keenum","pos":"QB","team":"CHI","salary":4000,"proj":7.34,"games":1,"implied":25.0,"opp":"CAR"},{"id":1130975,"name":"Trey Lance","pos":"QB","team":"LAC","salary":4000,"proj":7.33,"games":6,"implied":28.5,"opp":"ARI"},{"id":1215102,"name":"Chimere Dike","pos":"WR","team":"TEN","salary":3400,"proj":7.28,"games":17,"implied":20.8,"opp":"NYJ"},{"id":1395319,"name":"Elic Ayomanor","pos":"WR","team":"TEN","salary":3600,"proj":7.26,"games":16,"implied":20.8,"opp":"NYJ"},{"id":913829,"name":"Skylar Thompson","pos":"QB","team":"BAL","salary":4000,"proj":7.15,"games":1,"implied":26.0,"opp":"IND"},{"id":877784,"name":"Ty Johnson","pos":"RB","team":"BUF","salary":4200,"proj":7.07,"games":30,"implied":23.0,"opp":"HOU"},{"id":820734,"name":"Samaje Perine","pos":"RB","team":"CIN","salary":4600,"proj":7.05,"games":31,"implied":27.5,"opp":"TB"},{"id":836152,"name":"Mike Gesicki","pos":"TE","team":"CIN","salary":3100,"proj":6.99,"games":27,"implied":27.5,"opp":"TB"},{"id":911619,"name":"Shane Buechele","pos":"QB","team":"BUF","salary":4000,"proj":6.94,"games":1,"implied":23.0,"opp":"HOU"},{"id":1124851,"name":"Andrei Iosivas","pos":"WR","team":"CIN","salary":3300,"proj":6.91,"games":26,"implied":27.5,"opp":"TB"},{"id":1131198,"name":"Tyler Allgeier","pos":"RB","team":"ARI","salary":4900,"proj":6.87,"games":31,"implied":18.0,"opp":"LAC"},{"id":694117,"name":"Cooper Rush","pos":"QB","team":"ATL","salary":4000,"proj":6.79,"games":13,"implied":19.2,"opp":"PIT"},{"id":1248031,"name":"Trey Benson","pos":"RB","team":"ARI","salary":4400,"proj":6.63,"games":10,"implied":18.0,"opp":"LAC"},{"id":910852,"name":"Greg Dortch","pos":"WR","team":"BUF","salary":3400,"proj":6.61,"games":26,"implied":23.0,"opp":"HOU"},{"id":884083,"name":"Dawson Knox","pos":"TE","team":"BUF","salary":3100,"proj":6.58,"games":28,"implied":23.0,"opp":"HOU"},{"id":867303,"name":"Gardner Minshew II","pos":"QB","team":"ARI","salary":4100,"proj":6.55,"games":14,"implied":18.0,"opp":"LAC"},{"id":1172428,"name":"Dontayvion Wicks","pos":"WR","team":"PHI","salary":4100,"proj":6.51,"games":25,"implied":26.0,"opp":"WAS"},{"id":923109,"name":"Justice Hill","pos":"RB","team":"BAL","salary":4200,"proj":6.41,"games":23,"implied":26.0,"opp":"IND"},{"id":1381263,"name":"Mason Taylor","pos":"TE","team":"NYJ","salary":2800,"proj":6.41,"games":13,"implied":17.8,"opp":"TEN"},{"id":1126817,"name":"Jalen Nailor","pos":"WR","team":"LV","salary":4300,"proj":6.36,"games":26,"implied":22.0,"opp":"MIA"},{"id":1180321,"name":"Xavier Legette","pos":"WR","team":"CAR","salary":3700,"proj":6.24,"games":22,"implied":22.5,"opp":"CHI"},{"id":1160348,"name":"John Metchie III","pos":"WR","team":"CAR","salary":3200,"proj":6.24,"games":21,"implied":22.5,"opp":"CHI"},{"id":1441362,"name":"Isaac TeSlaa","pos":"WR","team":"DET","salary":3900,"proj":6.22,"games":14,"implied":27.8,"opp":"NO"},{"id":883976,"name":"Olamide Zaccheaus","pos":"WR","team":"ATL","salary":3500,"proj":6.2,"games":28,"implied":19.2,"opp":"PIT"}],"dst":[{"id":357,"name":"Chargers","pos":"DST","team":"LAC","salary":3500,"proj":6.0,"games":0},{"id":365,"name":"Jaguars","pos":"DST","team":"JAX","salary":3400,"proj":6.0,"games":0},{"id":356,"name":"Steelers","pos":"DST","team":"PIT","salary":3300,"proj":6.0,"games":0},{"id":334,"name":"Lions","pos":"DST","team":"DET","salary":3200,"proj":6.0,"games":0},{"id":354,"name":"Eagles","pos":"DST","team":"PHI","salary":3200,"proj":6.0,"games":0},{"id":324,"name":"Bills","pos":"DST","team":"BUF","salary":3100,"proj":6.0,"games":0},{"id":336,"name":"Titans","pos":"DST","team":"TEN","salary":3100,"proj":6.0,"games":0},{"id":335,"name":"Packers","pos":"DST","team":"GB","salary":3000,"proj":6.0,"games":0},{"id":366,"name":"Ravens","pos":"DST","team":"BAL","salary":3000,"proj":6.0,"games":0},{"id":325,"name":"Texans","pos":"DST","team":"HOU","salary":2900,"proj":6.0,"games":0},{"id":341,"name":"Raiders","pos":"DST","team":"LV","salary":2900,"proj":6.0,"games":0},{"id":326,"name":"Bears","pos":"DST","team":"CHI","salary":2800,"proj":6.0,"games":0}],"lineups":[{"type":"cash","players":[{"slot":"QB","name":"Josh Allen","pos":"QB","team":"BUF","salary":7000,"proj":24.63},{"slot":"RB","name":"Bijan Robinson","pos":"RB","team":"ATL","salary":7700,"proj":22.88},{"slot":"RB","name":"Jahmyr Gibbs","pos":"RB","team":"DET","salary":8000,"proj":23.56},{"slot":"WR","name":"Jauan Jennings","pos":"WR","team":"MIN","salary":4300,"proj":12.21},{"slot":"WR","name":"Ja'Marr Chase","pos":"WR","team":"CIN","salary":7800,"proj":23.01},{"slot":"WR","name":"Wan'Dale Robinson","pos":"WR","team":"TEN","salary":4800,"proj":14.32},{"slot":"TE","name":"Dallas Goedert","pos":"TE","team":"PHI","salary":4100,"proj":12.31},{"slot":"FLEX","name":"James Conner","pos":"RB","team":"ARI","salary":4200,"proj":13.08},{"slot":"DST","name":"Cardinals","pos":"DST","team":"ARI","salary":2000,"proj":6.0}],"salary":49900,"proj":152.0},{"type":"cash","players":[{"slot":"QB","name":"Carson Wentz","pos":"QB","team":"MIN","salary":4000,"proj":15.22},{"slot":"RB","name":"Bijan Robinson","pos":"RB","team":"ATL","salary":7700,"proj":22.88},{"slot":"RB","name":"Jahmyr Gibbs","pos":"RB","team":"DET","salary":8000,"proj":23.56},{"slot":"WR","name":"Michael Wilson","pos":"WR","team":"ARI","salary":5300,"proj":14.5},{"slot":"WR","name":"Ja'Marr Chase","pos":"WR","team":"CIN","salary":7800,"proj":23.01},{"slot":"WR","name":"Amon-Ra St. Brown","pos":"WR","team":"DET","salary":7500,"proj":21.92},{"slot":"TE","name":"Dalton Schultz","pos":"TE","team":"HOU","salary":3400,"proj":10.18},{"slot":"FLEX","name":"James Conner","pos":"RB","team":"ARI","salary":4200,"proj":13.08},{"slot":"DST","name":"Browns","pos":"DST","team":"CLE","salary":2100,"proj":6.0}],"salary":50000,"proj":150.35},{"type":"tournament","players":[{"slot":"QB","name":"Josh Allen","pos":"QB","team":"BUF","salary":7000,"proj":24.63},{"slot":"RB","name":"Bijan Robinson","pos":"RB","team":"ATL","salary":7700,"proj":22.88},{"slot":"RB","name":"Jahmyr Gibbs","pos":"RB","team":"DET","salary":8000,"proj":23.56},{"slot":"WR","name":"Jauan Jennings","pos":"WR","team":"MIN","salary":4300,"proj":12.21},{"slot":"WR","name":"Ja'Marr Chase","pos":"WR","team":"CIN","salary":7800,"proj":23.01},{"slot":"WR","name":"Wan'Dale Robinson","pos":"WR","team":"TEN","salary":4800,"proj":14.32},{"slot":"TE","name":"Dallas Goedert","pos":"TE","team":"PHI","salary":4100,"proj":12.31},{"slot":"FLEX","name":"James Conner","pos":"RB","team":"ARI","salary":4200,"proj":13.08},{"slot":"DST","name":"Cardinals","pos":"DST","team":"ARI","salary":2000,"proj":6.0}],"salary":49900,"proj":152.0},{"type":"tournament","players":[{"slot":"QB","name":"Jared Goff","pos":"QB","team":"DET","salary":6000,"proj":21.44},{"slot":"RB","name":"Derrick Henry","pos":"RB","team":"BAL","salary":6700,"proj":19.56},{"slot":"RB","name":"Bijan Robinson","pos":"RB","team":"ATL","salary":7700,"proj":22.88},{"slot":"WR","name":"Amon-Ra St. Brown","pos":"WR","team":"DET","salary":7500,"proj":21.92},{"slot":"WR","name":"Wan'Dale Robinson","pos":"WR","team":"TEN","salary":4800,"proj":14.32},{"slot":"WR","name":"Ja'Marr Chase","pos":"WR","team":"CIN","salary":7800,"proj":23.01},{"slot":"TE","name":"Dallas Goedert","pos":"TE","team":"PHI","salary":4100,"proj":12.31},{"slot":"FLEX","name":"Dalton Schultz","pos":"TE","team":"HOU","salary":3400,"proj":10.18},{"slot":"DST","name":"Cardinals","pos":"DST","team":"ARI","salary":2000,"proj":6.0}],"salary":50000,"proj":151.62}]},"generated":"2026-09-02T12:01"}</script>
+<script>
+(function(){
+"use strict";
+var D=JSON.parse(document.getElementById("DATA").textContent);
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var fmtP=function(p){return (p*100).toFixed(1)+"%"};
+var sgn=function(v,d){d=d||1;return (v>0?"+":"")+v.toFixed(d)};
+var money=function(n){return "$"+n.toLocaleString()};
+
+/* ---------- theme ---------- */
+var tt=$("#tt");
+tt.addEventListener("click",function(){
+  var cur=document.documentElement.getAttribute("data-theme");
+  var dark=cur?cur==="dark":window.matchMedia("(prefers-color-scheme:dark)").matches;
+  document.documentElement.setAttribute("data-theme",dark?"light":"dark");
+});
+
+/* ---------- tabs ---------- */
+$$("#tabs .tab").forEach(function(b){
+  b.addEventListener("click",function(){
+    $$("#tabs .tab").forEach(function(x){x.setAttribute("aria-selected","false")});
+    b.setAttribute("aria-selected","true");
+    ["sv","dk","nfl","cfb","par","ev"].forEach(function(id){
+      $("#"+id).hidden = (id!==b.dataset.p);
+    });
+    window.scrollTo({top:0,behavior:"instant"});
+  });
+});
+
+/* ---------- sortable tables ---------- */
+function sortable(tbl,rows,render,initKey,initDesc){
+  var st={k:initKey,desc:initDesc!==false};
+  function draw(){
+    var r=rows.slice().sort(function(a,b){
+      var x=a[st.k],y=b[st.k];
+      if(x===null||x===undefined)x=-Infinity; if(y===null||y===undefined)y=-Infinity;
+      if(typeof x==="string")return st.desc?y.localeCompare(x):x.localeCompare(y);
+      return st.desc?y-x:x-y;
+    });
+    $("tbody",tbl).innerHTML=r.map(render).join("");
+    $$("thead th",tbl).forEach(function(th){
+      th.classList.toggle("sorted",th.dataset.k===st.k);
+    });
+  }
+  $$("thead th",tbl).forEach(function(th){
+    if(!th.dataset.k)return;
+    th.addEventListener("click",function(){
+      if(st.k===th.dataset.k)st.desc=!st.desc; else {st.k=th.dataset.k;st.desc=true;}
+      draw();
+    });
+  });
+  return draw;
+}
+
+/* ---------- Hungarian (same algorithm as the Python, ported) ---------- */
+function hungarian(cost){
+  var n=cost.length, m=cost[0].length, size=Math.max(n,m), INF=Infinity;
+  var C=[];
+  for(var i=0;i<size;i++){C.push([]);for(var j=0;j<size;j++)C[i].push(i<n&&j<m?cost[i][j]:0);}
+  var u=new Array(size+1).fill(0), v=new Array(size+1).fill(0);
+  var p=new Array(size+1).fill(0), way=new Array(size+1).fill(0);
+  for(var i2=1;i2<=size;i2++){
+    p[0]=i2; var j0=0;
+    var minv=new Array(size+1).fill(INF), used=new Array(size+1).fill(false);
+    do{
+      used[j0]=true; var i0=p[j0], delta=INF, j1=0;
+      for(var j=1;j<=size;j++){ if(used[j])continue;
+        var cur=C[i0-1][j-1]-u[i0]-v[j];
+        if(cur<minv[j]){minv[j]=cur;way[j]=j0;}
+        if(minv[j]<delta){delta=minv[j];j1=j;}
+      }
+      for(var j2=0;j2<=size;j2++){
+        if(used[j2]){u[p[j2]]+=delta;v[j2]-=delta;} else minv[j2]-=delta;
+      }
+      j0=j1;
+    }while(p[j0]!==0);
+    do{ var j3=way[j0]; p[j0]=p[j3]; j0=j3; }while(j0);
+  }
+  var out={};
+  for(var j4=1;j4<=size;j4++){ if(p[j4]&&p[j4]-1<n&&j4-1<m) out[p[j4]-1]=j4-1; }
+  return out;
+}
+
+/* ---------- survivor ---------- */
+var GRID=D.survivor.grid, WEEKS=[];
+for(var w=1;w<=18;w++)WEEKS.push(w);
+var ALLT=Object.keys(GRID).sort();
+var used={};
+var BIG=1e6;
+
+function solve(){
+  var teams=ALLT.filter(function(t){return !used[t]});
+  var cost=teams.map(function(t){
+    return WEEKS.map(function(w){
+      var e=GRID[t][String(w)];
+      if(!e)return BIG;
+      return -Math.log(Math.min(Math.max(e.p,1e-6),0.999999));
+    });
+  });
+  if(!teams.length)return {};
+  var a=hungarian(cost), plan={};
+  Object.keys(a).forEach(function(ti){
+    var wi=a[ti];
+    if(cost[ti][wi]>=BIG)return;
+    var t=teams[ti], wk=WEEKS[wi];
+    plan[wk]=Object.assign({team:t},GRID[t][String(wk)]);
+  });
+  return plan;
+}
+function drawSurvivor(){
+  var plan=solve(), surv=1, n=0;
+  $("#svGrid").innerHTML=WEEKS.map(function(w){
+    var e=plan[w];
+    if(!e)return '<div class="wk done"><span class="wk-n">Week '+w+'</span>'+
+      '<span class="wk-t muted">&mdash;</span><span class="wk-o">no pick left</span></div>';
+    surv*=e.p; n++;
+    return '<div class="wk"><span class="wk-src">'+e.src+'</span>'+
+      '<span class="wk-n">Week '+w+'</span>'+
+      '<span class="wk-t">'+e.team+'</span>'+
+      '<span class="wk-o">'+e.ha+' '+e.opp+'</span>'+
+      '<span class="wk-p">'+fmtP(e.p)+'</span>'+
+      '<span class="bar"><i style="width:'+(e.p*100).toFixed(0)+'%"></i></span></div>';
+  }).join("");
+  $("#svOpt").textContent=(surv*100).toFixed(2)+"%";
+  $("#svN").textContent=n;
+  $("#svX").innerHTML=(surv/D.survivor.greedy_survival).toFixed(2)+"&times;";
+  $("#teams").innerHTML=ALLT.map(function(t){
+    return '<button class="tchip'+(used[t]?" used":"")+'" data-t="'+t+'" type="button">'+t+'</button>';
+  }).join("");
+  $$("#teams .tchip").forEach(function(b){
+    b.addEventListener("click",function(){ used[b.dataset.t]=!used[b.dataset.t]; drawSurvivor(); });
+  });
+}
+$("#svReset").addEventListener("click",function(){used={};drawSurvivor()});
+drawSurvivor();
+
+/* ---------- DFS ---------- */
+var dk=D.dfs.players.map(function(p){
+  return Object.assign({},p,{val:+(p.proj/p.salary*1000).toFixed(2)});
+});
+var dkDraw=sortable($("#tDK"),dk,function(p){
+  return "<tr><td class=\"team\">"+p.name+"</td><td><span class=\"pill p-flat\">"+p.pos+"</span></td>"+
+    "<td class=\"muted\">"+p.team+"</td><td class=\"r num\">"+money(p.salary)+"</td>"+
+    "<td class=\"r num\">"+p.proj.toFixed(2)+"</td><td class=\"r num\">"+p.val.toFixed(2)+"</td>"+
+    "<td class=\"r num\">"+p.implied.toFixed(1)+"</td><td class=\"muted\">"+p.opp+"</td></tr>";
+},"proj");
+function dkFilter(){
+  var on={QB:$("#fQB").checked,RB:$("#fRB").checked,WR:$("#fWR").checked,TE:$("#fTE").checked};
+  var any=on.QB||on.RB||on.WR||on.TE;
+  var v=$("#fVal").checked;
+  var rows=dk.filter(function(p){
+    if(any&&!on[p.pos])return false;
+    if(v&&p.val<2.6)return false;
+    return true;
+  });
+  $("tbody",$("#tDK")).innerHTML=rows.sort(function(a,b){return b.proj-a.proj}).map(function(p){
+    return "<tr><td class=\"team\">"+p.name+"</td><td><span class=\"pill p-flat\">"+p.pos+"</span></td>"+
+      "<td class=\"muted\">"+p.team+"</td><td class=\"r num\">"+money(p.salary)+"</td>"+
+      "<td class=\"r num\">"+p.proj.toFixed(2)+"</td><td class=\"r num\">"+p.val.toFixed(2)+"</td>"+
+      "<td class=\"r num\">"+p.implied.toFixed(1)+"</td><td class=\"muted\">"+p.opp+"</td></tr>";
+  }).join("");
+}
+["#fQB","#fRB","#fWR","#fTE","#fVal"].forEach(function(s){
+  $(s).addEventListener("change",function(){
+    $(s).closest(".chk").classList.toggle("on",$(s).checked); dkFilter();
+  });
+});
+dkDraw();
+
+$("#lus").innerHTML=D.dfs.lineups.map(function(l){
+  return '<div class="lu"><div class="lu-h"><span class="t">'+
+    (l.type==="cash"?"Cash game":"Tournament (stacked)")+'</span>'+
+    '<span class="m">'+money(l.salary)+' &middot; '+l.proj.toFixed(1)+' pts</span></div>'+
+    '<table><tbody>'+l.players.map(function(p){
+      return '<tr><td class="slot">'+p.slot+'</td><td class="team">'+p.name+
+        '</td><td class="muted">'+p.team+'</td><td class="r num">'+money(p.salary)+
+        '</td><td class="r num">'+p.proj.toFixed(1)+'</td></tr>';
+    }).join("")+'</tbody></table></div>';
+}).join("");
+
+/* ---------- game boards ---------- */
+function prep(games,abbr){
+  return games.map(function(g){
+    var homeFav=g.p>0.5;
+    var pick=homeFav?g.home:g.away;
+    var gap=(g.spread===null||g.spread===undefined)?null:+(g.margin-g.spread).toFixed(1);
+    return {game:(abbr?g.away:g.away)+" @ "+(abbr?g.home:g.home),
+      day:g.day,pick:pick,p:homeFav?g.p:1-g.p,margin:g.margin,
+      spread:(g.spread===null||g.spread===undefined)?null:g.spread,
+      gap:gap,total:g.total===null?null:g.total,
+      dis:(g.spread!==null&&g.spread!==undefined)?((g.spread>0)!==homeFav):false};
+  });
+}
+function boardRow(r){
+  return "<tr><td>"+r.game+"</td><td class=\"muted num\">"+r.day.slice(5)+"</td>"+
+    "<td class=\"team\">"+r.pick+"</td>"+
+    "<td class=\"r num\">"+fmtP(r.p)+"<span class=\"bar\"><i style=\"width:"+
+      ((r.p-0.5)*200).toFixed(0)+"%\"></i></span></td>"+
+    "<td class=\"r num\">"+sgn(r.margin)+"</td>"+
+    "<td class=\"r num\">"+(r.spread===null?"&mdash;":sgn(r.spread))+"</td>"+
+    "<td class=\"r num "+(r.gap===null?"":(Math.abs(r.gap)>3?"neg":"muted"))+"\">"+
+      (r.gap===null?"&mdash;":sgn(r.gap))+"</td>"+
+    "<td class=\"r num muted\">"+(r.total===null?"&mdash;":r.total.toFixed(1))+"</td></tr>";
+}
+var nflRows=prep(D.nfl.games,true), cfbRows=prep(D.ncaaf.games,false);
+var nflDraw=sortable($("#tNFL"),nflRows,boardRow,"p");
+var cfbDraw=sortable($("#tCFB"),cfbRows,boardRow,"p");
+nflDraw(); cfbDraw();
+function filt(tbl,rows,tests){
+  var r=rows.filter(function(x){return tests.every(function(f){return f(x)})});
+  $("tbody",tbl).innerHTML=r.sort(function(a,b){return b.p-a.p}).map(boardRow).join("");
+}
+$("#nDis").addEventListener("change",function(){
+  this.closest(".chk").classList.toggle("on",this.checked); nApply();});
+$("#nGap").addEventListener("change",function(){
+  this.closest(".chk").classList.toggle("on",this.checked); nApply();});
+function nApply(){
+  filt($("#tNFL"),nflRows,[
+    function(x){return !$("#nDis").checked||x.dis},
+    function(x){return !$("#nGap").checked||(x.gap!==null&&Math.abs(x.gap)>3)}]);
+}
+$("#cDis").addEventListener("change",function(){
+  this.closest(".chk").classList.toggle("on",this.checked); cApply();});
+$("#cClose").addEventListener("change",function(){
+  this.closest(".chk").classList.toggle("on",this.checked); cApply();});
+function cApply(){
+  filt($("#tCFB"),cfbRows,[
+    function(x){return !$("#cDis").checked||x.dis},
+    function(x){return !$("#cClose").checked||(x.spread!==null&&Math.abs(x.spread)<10)}]);
+}
+
+/* ---------- parlay table ---------- */
+var dec=function(a){return a>0?a/100+1:100/Math.abs(a)+1};
+$("#tPar").innerHTML=[1,2,3,4,5,6].map(function(n){
+  var pay=Math.pow(dec(-110),n), tru=Math.pow(0.5,n), fair=1/tru, ev=tru*pay-1;
+  return "<tr><td class=\"num\">"+n+"</td><td class=\"r num\">"+pay.toFixed(2)+"&times;</td>"+
+    "<td class=\"r num\">"+(tru*100).toFixed(2)+"%</td>"+
+    "<td class=\"r num\">"+fair.toFixed(2)+"&times;</td>"+
+    "<td class=\"r num neg\">"+(ev*100).toFixed(2)+"%</td></tr>";
+}).join("");
+
+/* ---------- ratings ---------- */
+var rats=D.survivor.ratings;
+var mx=Math.max.apply(null,rats.map(function(r){return Math.abs(r.r)}));
+sortable($("#tRat"),rats,function(t){
+  var w=Math.abs(t.r)/mx*100;
+  return "<tr><td class=\"team\">"+t.team+"</td><td class=\"r num "+(t.r>0?"pos":"neg")+"\">"+
+    sgn(t.r)+"</td><td><span class=\"bar\" style=\"min-width:120px\"><i style=\"width:"+
+    w.toFixed(0)+"%;background:"+(t.r>0?"var(--good)":"var(--bad)")+"\"></i></span></td></tr>";
+},"r")();
+})();
+</script>
